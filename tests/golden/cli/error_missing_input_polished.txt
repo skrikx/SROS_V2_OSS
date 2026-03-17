@@ -1,0 +1,2 @@
+error: receipts export requires --input. Likely cause: a required input was omitted. Next: run 'sros receipts export --help'
+next: run the matching '--help' command for the exact flags and examples

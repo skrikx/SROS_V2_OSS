@@ -10,8 +10,12 @@ import (
 func newInspectCommand() *Command {
 	return &Command{
 		Name:    "inspect",
-		Summary: "Inspect local wiring and repository surfaces",
+		Summary: "Inspect local wiring, readiness, and repository surfaces with operator-friendly snapshots",
 		Usage:   "sros inspect [--path <relative-path>]",
+		Examples: []string{
+			"sros inspect",
+			"sros inspect --path examples/showcase",
+		},
 		Run: func(ctx *Context, args []string) error {
 			fs := flag.NewFlagSet("inspect", flag.ContinueOnError)
 			fs.SetOutput(ioDiscard{})
@@ -27,7 +31,7 @@ func newInspectCommand() *Command {
 					return EnvironmentError(err.Error())
 				}
 				payload := map[string]any{"path": target, "is_dir": info.IsDir(), "size_bytes": info.Size()}
-				return writeOutput(ctx, fmt.Sprintf("inspect: %s", target), payload)
+				return writeOutput(ctx, fmt.Sprintf("inspect target: %s\nkind: %s\nsize_bytes: %d", target, fileKind(info.IsDir()), info.Size()), payload)
 			}
 
 			required := []string{"cmd/sros", "internal/core/boot", "internal/core/runtime", "internal/core/mem", "internal/core/mirror", "contracts", "docs", "tests"}
@@ -45,7 +49,14 @@ func newInspectCommand() *Command {
 				"trace_wired":      ctx.Bundle.Trace != nil,
 				"provenance_wired": ctx.Bundle.Provenance != nil,
 			}
-			return writeOutput(ctx, "inspect: repository wiring snapshot captured", payload)
+			return writeOutput(ctx, "inspect: repository wiring snapshot captured\nfocus: repository wiring and operator-visible boundaries", payload)
 		},
 	}
+}
+
+func fileKind(dir bool) string {
+	if dir {
+		return "directory"
+	}
+	return "file"
 }

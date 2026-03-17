@@ -89,6 +89,21 @@ func merge(base, overlay Config) Config {
 	if overlay.OutputFormat != "" {
 		base.OutputFormat = overlay.OutputFormat
 	}
+	if overlay.Database.Driver != "" {
+		base.Database.Driver = overlay.Database.Driver
+	}
+	if overlay.Database.URL != "" {
+		base.Database.URL = overlay.Database.URL
+	}
+	if overlay.Database.MigrationsDir != "" {
+		base.Database.MigrationsDir = overlay.Database.MigrationsDir
+	}
+	if overlay.Database.Schema != "" {
+		base.Database.Schema = overlay.Database.Schema
+	}
+	if overlay.Database.Enabled {
+		base.Database.Enabled = true
+	}
 	return base
 }
 
@@ -112,6 +127,13 @@ func loadFromFile(path string) (Config, error) {
 	cfg.MemoryStorePath = resolveIfPresent(base, values["memory_store_path"])
 	cfg.TraceStorePath = resolveIfPresent(base, values["trace_store_path"])
 	cfg.OutputFormat = strings.ToLower(strings.TrimSpace(values["output_format"]))
+	cfg.Database = DatabaseConfig{
+		Enabled:       strings.EqualFold(strings.TrimSpace(values["database_enabled"]), "true"),
+		Driver:        strings.TrimSpace(values["database_driver"]),
+		URL:           strings.TrimSpace(values["database_url"]),
+		MigrationsDir: resolveIfPresent(base, values["database_migrations_dir"]),
+		Schema:        strings.TrimSpace(values["database_schema"]),
+	}
 
 	return cfg, nil
 }

@@ -1,0 +1,7 @@
+{
+  "compatible": true,
+  "profile": {
+    "name": "patch_only"
+  },
+  "reason": "profile compatible"
+}

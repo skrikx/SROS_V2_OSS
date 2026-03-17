@@ -1,0 +1,10 @@
+{
+  "envelope_version": "v2.0",
+  "envelope_id": "env_min",
+  "connector": "local_fs",
+  "auth_type": "local_token",
+  "class": "standard",
+  "display_name": "Golden Envelope",
+  "secret_material": "[REDACTED]",
+  "expires_at": "2027-03-17T12:00:00Z"
+}

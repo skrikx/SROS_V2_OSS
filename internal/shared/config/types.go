@@ -7,13 +7,14 @@ const (
 )
 
 type Config struct {
-	Mode             Mode   `json:"mode"`
-	WorkspaceRoot    string `json:"workspace_root"`
-	ArtifactRoot     string `json:"artifact_root"`
-	PolicyBundlePath string `json:"policy_bundle_path"`
-	MemoryStorePath  string `json:"memory_store_path"`
-	TraceStorePath   string `json:"trace_store_path"`
-	OutputFormat     string `json:"output_format"`
+	Mode             Mode           `json:"mode"`
+	WorkspaceRoot    string         `json:"workspace_root"`
+	ArtifactRoot     string         `json:"artifact_root"`
+	PolicyBundlePath string         `json:"policy_bundle_path"`
+	MemoryStorePath  string         `json:"memory_store_path"`
+	TraceStorePath   string         `json:"trace_store_path"`
+	OutputFormat     string         `json:"output_format"`
+	Database         DatabaseConfig `json:"database"`
 }
 
 type LoadOptions struct {

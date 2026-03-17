@@ -10,8 +10,12 @@ import (
 func newReceiptsCommand() *Command {
 	cmd := &Command{
 		Name:    "receipts",
-		Summary: "Receipt and closure proof surfaces",
+		Summary: "Receipt export and closure proof inspection surfaces",
 		Usage:   "sros receipts <export|closure>",
+		Examples: []string{
+			"sros receipts export --input examples/provenance/receipt_bundle_min.json",
+			"sros receipts closure --input examples/provenance/closure_proof_min.json",
+		},
 	}
 	cmd.Subcommands = []*Command{
 		{
@@ -26,7 +30,7 @@ func newReceiptsCommand() *Command {
 					return OperatorError(err.Error())
 				}
 				if strings.TrimSpace(*input) == "" {
-					return OperatorError("receipts export requires --input")
+					return missingFlagError("receipts export", "--input", "run 'sros receipts export --help'")
 				}
 				if ctx.Bundle.Provenance == nil {
 					return DeferredError("provenance plane is not wired")
@@ -35,7 +39,7 @@ func newReceiptsCommand() *Command {
 				if err != nil {
 					return EnvironmentError(err.Error())
 				}
-				return writeOutput(ctx, "receipt bundle exported", data)
+				return writeOutput(ctx, "receipt bundle exported\nfocus: audit and replay handoff artifact", data)
 			},
 		},
 		{
@@ -50,7 +54,7 @@ func newReceiptsCommand() *Command {
 					return OperatorError(err.Error())
 				}
 				if strings.TrimSpace(*input) == "" {
-					return OperatorError("receipts closure requires --input")
+					return missingFlagError("receipts closure", "--input", "run 'sros receipts closure --help'")
 				}
 				data, err := os.ReadFile(strings.TrimSpace(*input))
 				if err != nil {
@@ -60,7 +64,7 @@ func newReceiptsCommand() *Command {
 				if err := json.Unmarshal(data, &payload); err != nil {
 					return EnvironmentError(err.Error())
 				}
-				return writeOutput(ctx, "closure proof inspected", payload)
+				return writeOutput(ctx, "closure proof inspected\nfocus: terminal proof and linked evidence", payload)
 			},
 		},
 	}

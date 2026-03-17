@@ -1,0 +1,6 @@
+{
+  "name": "network_restricted",
+  "description": "Local execution with outbound network disabled",
+  "allow_read": true,
+  "allow_write": true
+}

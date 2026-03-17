@@ -48,6 +48,13 @@ type Manager struct {
 	provenance   *coreprov.Service
 }
 
+func (m *Manager) SetPostgresStore(store *PostgresStore) {
+	if m == nil || m.store == nil {
+		return
+	}
+	m.store.SetPostgresStore(store)
+}
+
 func NewManager(opts Options) (*Manager, error) {
 	store, err := NewStore(opts.StoreDir)
 	if err != nil {

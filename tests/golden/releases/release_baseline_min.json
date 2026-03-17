@@ -1,0 +1,5 @@
+{
+  "release_id": "rel_min",
+  "checkpoint_id": "cp_min",
+  "target_stage": "promoted"
+}

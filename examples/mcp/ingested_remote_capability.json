@@ -1,0 +1,15 @@
+{
+  "name": "remote.docs.lookup",
+  "title": "Remote Docs Lookup",
+  "description": "Remote MCP capability for governed docs lookup",
+  "domain": "research",
+  "endpoint": "https://example.com/mcp/docs",
+  "auth_type": "bearer",
+  "capabilities": [
+    "docs.search",
+    "docs.fetch"
+  ],
+  "metadata": {
+    "source": "remote_mcp"
+  }
+}

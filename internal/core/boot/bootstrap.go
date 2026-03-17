@@ -1,6 +1,7 @@
 package boot
 
 import (
+	"context"
 	"fmt"
 	"path/filepath"
 
@@ -33,8 +34,14 @@ func Bootstrap(cfg config.Config) (Bundle, error) {
 		{Name: "mirror", Wired: true, Summary: "semantic drift and witness surfaces active"},
 		{Name: "trace", Wired: true, Summary: "append-only evidence lineage active"},
 		{Name: "provenance", Wired: true, Summary: "receipts, bundles, and closure proofs active"},
+		{Name: "persistence", Wired: true, Summary: "postgres adapters and artifact persistence posture active"},
 		{Name: "inspector", Wired: true, Summary: "inspect routing boundary active for memory and mirror"},
 		{Name: "fabric", Wired: true, DeferredTo: "W09", Summary: "governed fabric semantics only; execution deferred"},
+	}
+
+	persistence, err := initPersistence(cfg)
+	if err != nil {
+		return Bundle{}, err
 	}
 
 	policyPath := cfg.PolicyBundlePath
@@ -48,6 +55,11 @@ func Bootstrap(cfg config.Config) (Bundle, error) {
 	if err != nil {
 		return Bundle{}, err
 	}
+	if persistence != nil && persistence.Connected {
+		policyStore := gov.NewPolicyStore(persistence.DB)
+		governor.SetPolicyStore(policyStore)
+		_ = policyStore.SaveBundle(context.Background(), governor.Bundle())
+	}
 	orchestrator, err := orch.New(orch.Options{
 		ArtifactRoot: filepath.Join(cfg.ArtifactRoot, "runtime", "orch"),
 	})
@@ -58,6 +70,9 @@ func Bootstrap(cfg config.Config) (Bundle, error) {
 	if err != nil {
 		return Bundle{}, err
 	}
+	if persistence != nil && persistence.Connected {
+		memoryStore.SetPostgresStore(mem.NewPostgresStore(persistence.DB))
+	}
 	mirrorEngine, err := mirror.New(filepath.Join(cfg.ArtifactRoot, "mirror"), nil)
 	if err != nil {
 		return Bundle{}, err
@@ -66,10 +81,23 @@ func Bootstrap(cfg config.Config) (Bundle, error) {
 	if err != nil {
 		return Bundle{}, err
 	}
+	if persistence != nil && persistence.Connected {
+		traceService.Ledger.SetPostgresLedger(coretrace.NewPostgresLedger(persistence.DB))
+	}
 	provenanceService, err := coreprov.New(filepath.Join(cfg.ArtifactRoot, "provenance"), nil)
 	if err != nil {
 		return Bundle{}, err
 	}
+	var provenancePGStore *coreprov.PostgresStore
+	if persistence != nil && persistence.Connected {
+		provenancePGStore = coreprov.NewPostgresStore(persistence.DB)
+		provenanceService.SetPostgresStore(provenancePGStore)
+	}
+	releaseBaseline, err := coreprov.NewReleaseBaseline(filepath.Join(cfg.ArtifactRoot, "releases"), nil, provenancePGStore)
+	if err != nil {
+		return Bundle{}, err
+	}
+	provenanceService.SetReleaseBaseline(releaseBaseline)
 	orchestrator.SetEventHook(func(kind string, payload map[string]any) {
 		runID, _ := payload["run_id"].(string)
 		if runID == "" {
@@ -107,19 +135,27 @@ func Bootstrap(cfg config.Config) (Bundle, error) {
 	if err != nil {
 		return Bundle{}, err
 	}
+	if persistence != nil && persistence.Connected {
+		runtimeManager.SetPostgresStore(runtime.NewPostgresStore(persistence.DB))
+	}
+	fabricService, err := newFabricService(cfg.ArtifactRoot, governor, traceService, provenanceService)
+	if err != nil {
+		return Bundle{}, err
+	}
 
 	return Bundle{
 		Mode:         ModeLocalCLI,
 		Compiler:     sr8.NewCompiler(sr8.Options{}),
 		Runtime:      runtimeManager,
 		Inspector:    runtimeManager,
-		Fabric:       runtimeManager,
+		Fabric:       fabricService,
 		Orchestrator: orchestrator,
 		Governor:     governor,
 		Memory:       memoryStore,
 		Mirror:       mirrorEngine,
 		Trace:        traceService,
 		Provenance:   provenanceService,
+		Persistence:  persistence,
 		Boundaries:   boundaries,
 	}, nil
 }

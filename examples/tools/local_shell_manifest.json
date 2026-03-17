@@ -1,0 +1,20 @@
+{
+  "manifest_version": "v2.0",
+  "name": "example.local.shell",
+  "title": "Example Local Shell",
+  "description": "Example governed shell capability",
+  "version": "1.0.0",
+  "class": "tool.local.shell",
+  "domain": "workspace",
+  "policy_class": "shell.exec",
+  "status": "draft",
+  "trust_boundary": "local_process",
+  "sandbox_profiles": [
+    "shell_gated"
+  ],
+  "capabilities": [
+    "shell.exec"
+  ],
+  "unsafe": true,
+  "experimental": true
+}

@@ -1,0 +1,19 @@
+{
+  "manifest_version": "v2.0",
+  "name": "remote.docs.lookup",
+  "title": "Remote Docs Lookup",
+  "description": "Remote MCP capability for governed docs lookup",
+  "version": "ingested",
+  "class": "mcp.ingress",
+  "domain": "research",
+  "policy_class": "connector.governed",
+  "status": "validated",
+  "trust_boundary": "external_net",
+  "sandbox_profiles": [
+    "network_restricted"
+  ],
+  "auth_type": "bearer",
+  "auth_envelope_required": true,
+  "mcp_ingress_capable": true,
+  "remote_capable": true
+}

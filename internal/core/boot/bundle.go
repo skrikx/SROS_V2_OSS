@@ -22,6 +22,7 @@ type Bundle struct {
 	Mirror       *mirror.Engine     `json:"-"`
 	Trace        *coretrace.Service `json:"-"`
 	Provenance   *coreprov.Service  `json:"-"`
+	Persistence  *Persistence       `json:"-"`
 	Boundaries   []ServiceBoundary  `json:"boundaries"`
 }
 

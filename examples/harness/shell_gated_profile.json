@@ -1,0 +1,7 @@
+{
+  "name": "shell_gated",
+  "description": "Shell allowed only under governed gating",
+  "allow_read": true,
+  "allow_write": true,
+  "allow_shell": true
+}

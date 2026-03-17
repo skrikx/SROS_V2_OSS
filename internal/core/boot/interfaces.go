@@ -39,4 +39,5 @@ type ServiceSet struct {
 	Mirror       *mirror.Engine
 	Trace        *coretrace.Service
 	Provenance   *coreprov.Service
+	Persistence  *Persistence
 }

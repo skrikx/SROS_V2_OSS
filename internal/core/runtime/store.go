@@ -1,6 +1,7 @@
 package runtime
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"os"
@@ -19,8 +20,9 @@ type ApprovalCheckpoint struct {
 }
 
 type Store struct {
-	root string
-	mu   sync.Mutex
+	root    string
+	mu      sync.Mutex
+	pgStore *PostgresStore
 }
 
 func NewStore(root string) (*Store, error) {
@@ -48,6 +50,10 @@ func (s *Store) Root() string {
 	return s.root
 }
 
+func (s *Store) SetPostgresStore(store *PostgresStore) {
+	s.pgStore = store
+}
+
 func (s *Store) SaveSession(session RuntimeSession) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -59,6 +65,11 @@ func (s *Store) SaveSession(session RuntimeSession) error {
 	latest := filepath.Join(s.root, "latest_session.txt")
 	if err := os.WriteFile(latest, []byte(session.SessionID), 0o644); err != nil {
 		return fmt.Errorf("write latest session marker: %w", err)
+	}
+	if s.pgStore != nil {
+		if err := s.pgStore.SaveSession(context.Background(), session); err != nil {
+			return err
+		}
 	}
 	return nil
 }
@@ -101,7 +112,13 @@ func (s *Store) SaveCheckpoint(cp RuntimeCheckpoint) error {
 	defer s.mu.Unlock()
 
 	path := filepath.Join(s.root, "checkpoints", string(cp.Record.CheckpointID)+".json")
-	return writeJSON(path, cp)
+	if err := writeJSON(path, cp); err != nil {
+		return err
+	}
+	if s.pgStore != nil {
+		return s.pgStore.SaveCheckpoint(context.Background(), cp)
+	}
+	return nil
 }
 
 func (s *Store) LoadCheckpoint(id string) (RuntimeCheckpoint, error) {
@@ -121,7 +138,13 @@ func (s *Store) SaveRollback(rb RuntimeRollback) error {
 	defer s.mu.Unlock()
 
 	path := filepath.Join(s.root, "rollbacks", string(rb.Record.RollbackID)+".json")
-	return writeJSON(path, rb)
+	if err := writeJSON(path, rb); err != nil {
+		return err
+	}
+	if s.pgStore != nil {
+		return s.pgStore.SaveRollback(context.Background(), rb)
+	}
+	return nil
 }
 
 func (s *Store) SaveApproval(a ApprovalCheckpoint) error {
@@ -129,7 +152,13 @@ func (s *Store) SaveApproval(a ApprovalCheckpoint) error {
 	defer s.mu.Unlock()
 
 	path := filepath.Join(s.root, "approvals", a.SessionID+".json")
-	return writeJSON(path, a)
+	if err := writeJSON(path, a); err != nil {
+		return err
+	}
+	if s.pgStore != nil {
+		return s.pgStore.SaveApproval(context.Background(), RuntimeSession{SessionID: a.SessionID, RunID: a.SessionID}, a)
+	}
+	return nil
 }
 
 func (s *Store) LoadApproval(sessionID string) (ApprovalCheckpoint, error) {

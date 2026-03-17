@@ -1,0 +1,25 @@
+{
+  "runs": [
+    "examples/runs/minimal_run_contract.json",
+    "examples/runs/checkpointable_run_contract.json"
+  ],
+  "tools": [
+    "examples/tools/local_patch_manifest.json",
+    "examples/tools/local_shell_manifest.json",
+    "examples/tools/local_fileio_manifest.json"
+  ],
+  "traces": [
+    "examples/trace/replay_case.json",
+    "examples/trace/run_trace_min.json"
+  ],
+  "receipts": [
+    "examples/provenance/receipt_bundle_min.json",
+    "examples/provenance/closure_proof_min.json"
+  ],
+  "releases": [
+    "examples/releases/release_baseline_min.json"
+  ],
+  "regression": [
+    "examples/regression/canonical_workflow_pack.json"
+  ]
+}

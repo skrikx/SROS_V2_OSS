@@ -1,0 +1,15 @@
+{
+  "manifest_version": "v2.0",
+  "name": "golden.local.patch",
+  "title": "Golden Local Patch",
+  "description": "Golden manifest",
+  "version": "1.0.0",
+  "class": "tool.local.patch",
+  "domain": "workspace",
+  "policy_class": "patch.apply",
+  "status": "draft",
+  "trust_boundary": "local_fs",
+  "sandbox_profiles": [
+    "patch_only"
+  ]
+}

@@ -1,0 +1,22 @@
+{
+  "rank": 15,
+  "manifest": {
+    "name": "local.patch",
+    "title": "Local Patch",
+    "class": "tool.local.patch",
+    "domain": "workspace",
+    "policy_class": "patch.apply",
+    "status": "active",
+    "trust_boundary": "local_fs",
+    "auth_type": "",
+    "auth_envelope_required": false,
+    "unsafe": false
+  },
+  "policy_fit": "policy_bound",
+  "environment_fit": "local_safe",
+  "auth_envelope_required": false,
+  "selected_sandbox": "patch_only",
+  "unsafe": false,
+  "selectable": true,
+  "reason": "policy and environment compatible"
+}

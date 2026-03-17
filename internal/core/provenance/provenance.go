@@ -1,6 +1,7 @@
 package provenance
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"os"
@@ -8,6 +9,7 @@ import (
 	"time"
 
 	"srosv2/contracts/evidence"
+	"srosv2/contracts/release"
 	"srosv2/internal/shared/ids"
 )
 
@@ -19,8 +21,10 @@ type ArtifactProvenance struct {
 }
 
 type Service struct {
-	root string
-	now  func() time.Time
+	root        string
+	now         func() time.Time
+	pgStore     *PostgresStore
+	releaseBase *ReleaseBaseline
 }
 
 func New(root string, now func() time.Time) (*Service, error) {
@@ -39,6 +43,21 @@ func New(root string, now func() time.Time) (*Service, error) {
 }
 
 func (s *Service) Root() string { return s.root }
+
+func (s *Service) SetPostgresStore(store *PostgresStore) {
+	s.pgStore = store
+}
+
+func (s *Service) SetReleaseBaseline(base *ReleaseBaseline) {
+	s.releaseBase = base
+}
+
+func (s *Service) PackRelease(ctx context.Context, checkpointID ids.CheckpointID, stage release.Stage) (map[string]any, error) {
+	if s.releaseBase == nil {
+		return nil, fmt.Errorf("release baseline is not wired")
+	}
+	return s.releaseBase.Pack(ctx, checkpointID, stage, map[string]string{"mode": "local_cli"})
+}
 
 func (s *Service) LinkArtifact(runID ids.RunID, path, mediaType, sourceKind string) (evidence.ArtifactRef, error) {
 	info, err := os.Stat(path)
@@ -65,6 +84,11 @@ func (s *Service) LinkArtifact(runID ids.RunID, path, mediaType, sourceKind stri
 	out := filepath.Join(s.root, "artifacts", string(ref.ArtifactID)+".json")
 	if err := os.WriteFile(out, append(encoded, '\n'), 0o644); err != nil {
 		return evidence.ArtifactRef{}, fmt.Errorf("write artifact provenance: %w", err)
+	}
+	if s.pgStore != nil {
+		if err := s.pgStore.SaveArtifactProvenance(context.Background(), prov); err != nil {
+			return evidence.ArtifactRef{}, err
+		}
 	}
 	return ref, nil
 }

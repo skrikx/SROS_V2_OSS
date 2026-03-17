@@ -1,14 +1,13 @@
-sros tools - Tool capability surfaces (fabric deferred)
+sros tools - Governed tool fabric surfaces
 
 Usage:
-  sros tools <list|show|validate|register>
+  sros tools <list|show|search|validate|register>
 
 Commands:
   list         List known tool manifests
+  search       Search the governed capability registry
   show         Show a single tool manifest
-  validate     Validate a policy bundle for governed tool semantics
+  validate     Validate a capability manifest
   register     Register a tool manifest
 
 Run 'sros help <command>' for more details.
-
-

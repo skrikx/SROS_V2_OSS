@@ -62,8 +62,13 @@ func InternalError(message string) error { return &CommandError{Kind: KindIntern
 func NewRootCommand() *Command {
 	root := &Command{
 		Name:    "sros",
-		Summary: "SROS V2 local-only operator CLI",
+		Summary: "SROS V2 local-only operator CLI for governed runs, traces, receipts, and fabric workflows",
 		Usage:   "sros <command> [flags]",
+		Examples: []string{
+			"sros verify",
+			"sros examples run",
+			"sros trace inspect --input examples/trace/run_trace_min.json",
+		},
 	}
 	root.Subcommands = []*Command{
 		newInitCommand(),
@@ -87,6 +92,12 @@ func NewRootCommand() *Command {
 		newToolsCommand(),
 		newConnectorsCommand(),
 		newMCPCommand(),
+		newReplayCommand(),
+		newVerifyCommand(),
+		newReleaseCommand(),
+		newTestCommand(),
+		newExamplesCommand(),
+		newScaffoldCommand(),
 	}
 	return root
 }
@@ -174,6 +185,14 @@ func WriteHelp(ctx *Context, cmd *Command, path []string) {
 			lines = append(lines, fmt.Sprintf("  %-12s %s", sub.Name, sub.Summary))
 		}
 	}
+	if cmd.Name == "sros" {
+		lines = append(lines, "", "Fast Path:")
+		lines = append(lines,
+			"  sros verify        Check front-door readiness and local surfaces",
+			"  sros examples run  Load the example catalog and showcase paths",
+			"  sros test smoke    Exercise the real local machine surfaces",
+		)
+	}
 	if len(cmd.Examples) > 0 {
 		lines = append(lines, "", "Examples:")
 		for _, ex := range cmd.Examples {
@@ -221,6 +240,10 @@ func writeOutput(ctx *Context, text string, payload any) error {
 	}
 	_, _ = fmt.Fprintln(ctx.Stdout, text)
 	return nil
+}
+
+func missingFlagError(command, flagName, next string) error {
+	return OperatorError(fmt.Sprintf("%s requires %s. Likely cause: a required input was omitted. Next: %s", command, flagName, next))
 }
 
 func formatBoundaries(boundaries []boot.ServiceBoundary) string {

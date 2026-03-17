@@ -1,0 +1,14 @@
+sros examples - Example catalog, killer examples, and showcase runner surfaces
+
+Usage:
+  sros examples <run|catalog>
+
+Commands:
+  run          Load the example catalog and summarize the strongest runnable paths
+  catalog      Show the example catalog with category counts and showcase paths
+
+Examples:
+  sros examples run
+  sros examples catalog
+
+Run 'sros help <command>' for more details.

@@ -1,0 +1,4 @@
+{
+  "input": "examples/traces/replay_case_min.json",
+  "artifact": "artifacts/replays/replay_case_min.json"
+}

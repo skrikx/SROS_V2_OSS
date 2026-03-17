@@ -1,0 +1,18 @@
+{
+  "manifest_version": "v2.0",
+  "name": "example.local.patch",
+  "title": "Example Local Patch",
+  "description": "Example governed patch capability",
+  "version": "1.0.0",
+  "class": "tool.local.patch",
+  "domain": "workspace",
+  "policy_class": "patch.apply",
+  "status": "draft",
+  "trust_boundary": "local_fs",
+  "sandbox_profiles": [
+    "patch_only"
+  ],
+  "capabilities": [
+    "patch.apply"
+  ]
+}

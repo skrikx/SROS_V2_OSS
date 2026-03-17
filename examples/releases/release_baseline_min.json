@@ -1,0 +1,18 @@
+{
+  "release": {
+    "contract_version": "v2.0",
+    "release_id": "rel_min",
+    "checkpoint_id": "cp_min",
+    "target_stage": "promoted",
+    "promotion_meta": {
+      "mode": "local_cli"
+    },
+    "created_at": "2026-03-17T12:00:00Z"
+  },
+  "promotion_gate": {
+    "gate_id": "gate_rel_min",
+    "release_id": "rel_min",
+    "status": "pass",
+    "checked_at": "2026-03-17T12:00:00Z"
+  }
+}

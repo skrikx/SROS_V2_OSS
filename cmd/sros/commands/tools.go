@@ -3,13 +3,15 @@ package commands
 import (
 	"context"
 	"flag"
+
+	ctools "srosv2/contracts/tools"
 )
 
 func newToolsCommand() *Command {
 	cmd := &Command{
 		Name:    "tools",
-		Summary: "Tool capability surfaces (fabric deferred)",
-		Usage:   "sros tools <list|show|validate|register>",
+		Summary: "Governed tool fabric surfaces",
+		Usage:   "sros tools <list|show|search|validate|register>",
 	}
 
 	cmd.Subcommands = []*Command{
@@ -29,6 +31,33 @@ func newToolsCommand() *Command {
 					return EnvironmentError(err.Error())
 				}
 				return writeOutput(ctx, "tools listed", data)
+			},
+		},
+		{
+			Name:    "search",
+			Summary: "Search the governed capability registry",
+			Usage:   "sros tools search [--class <class>] [--domain <domain>]",
+			Run: func(ctx *Context, args []string) error {
+				fs := flag.NewFlagSet("tools search", flag.ContinueOnError)
+				fs.SetOutput(ioDiscard{})
+				class := fs.String("class", "", "capability class prefix")
+				domain := fs.String("domain", "", "domain filter")
+				policyClass := fs.String("policy-class", "", "policy class filter")
+				if err := fs.Parse(args); err != nil {
+					return OperatorError(err.Error())
+				}
+				if ctx.Bundle.Fabric == nil {
+					return DeferredError("tools search boundary is not wired")
+				}
+				data, err := ctx.Bundle.Fabric.ToolsSearch(context.Background(), ctools.SearchQuery{
+					Class:       *class,
+					Domain:      *domain,
+					PolicyClass: *policyClass,
+				})
+				if err != nil {
+					return EnvironmentError(err.Error())
+				}
+				return writeOutput(ctx, "tool search completed", data)
 			},
 		},
 		{
@@ -57,26 +86,26 @@ func newToolsCommand() *Command {
 		},
 		{
 			Name:    "validate",
-			Summary: "Validate a policy bundle for governed tool semantics",
-			Usage:   "sros tools validate --policy <path>",
+			Summary: "Validate a capability manifest",
+			Usage:   "sros tools validate --manifest <path>",
 			Run: func(ctx *Context, args []string) error {
 				fs := flag.NewFlagSet("tools validate", flag.ContinueOnError)
 				fs.SetOutput(ioDiscard{})
-				policyPath := fs.String("policy", "", "policy bundle path")
+				manifestPath := fs.String("manifest", "", "manifest path")
 				if err := fs.Parse(args); err != nil {
 					return OperatorError(err.Error())
 				}
-				if *policyPath == "" {
-					return OperatorError("tools validate requires --policy")
+				if *manifestPath == "" {
+					return OperatorError("tools validate requires --manifest")
 				}
 				if ctx.Bundle.Fabric == nil {
 					return DeferredError("tools validate boundary is not wired")
 				}
-				data, err := ctx.Bundle.Fabric.ToolsValidate(context.Background(), *policyPath)
+				data, err := ctx.Bundle.Fabric.ToolsValidate(context.Background(), *manifestPath)
 				if err != nil {
 					return EnvironmentError(err.Error())
 				}
-				return writeOutput(ctx, "tool policy validated", data)
+				return writeOutput(ctx, "tool manifest validated", data)
 			},
 		},
 		{

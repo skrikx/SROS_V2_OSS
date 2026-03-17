@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"srosv2/contracts/runcontract"
+	"srosv2/contracts/tools"
 	"srosv2/internal/core/orch"
 )
 
@@ -87,8 +88,10 @@ type Inspector interface {
 type Fabric interface {
 	ToolsList(context.Context) (map[string]any, error)
 	ToolsShow(context.Context, string) (map[string]any, error)
+	ToolsSearch(context.Context, tools.SearchQuery) (map[string]any, error)
 	ToolsValidate(context.Context, string) (map[string]any, error)
 	ToolsRegister(context.Context, string) (map[string]any, error)
 	ConnectorsList(context.Context) (map[string]any, error)
+	ConnectorsInspectEnvelope(context.Context, string) (map[string]any, error)
 	MCPIngest(context.Context, string) (map[string]any, error)
 }

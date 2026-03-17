@@ -1,24 +1,26 @@
-# Architecture (W01 Baseline)
+# Architecture
 
-## Positioning
+SROS V2 is not a forked architecture. It is the local runtime envelope of SROS V3.
 
-SROS V2 is not a legacy fork. It is the local-only, CLI-first profile of SROS V3.
-The architecture remains singular across versions; V2 narrows runtime envelope but does not fork topology.
+## Canonical chain
 
-## Canonical Processing Chain
+Intent -> SR8 -> run contract / SRXML -> SR9 -> ORCH / GOV / MEM / MIRROR -> TRACE -> PROVENANCE
 
-Intent -> SR8 -> run contract / SRXML -> SR9 -> ORCH / GOV / MEM / MIRROR -> traces -> receipts
+## Persistence posture
 
-## Ownership Zones (Scaffold)
+- PostgreSQL backs durable runtime, policy, memory, trace, evidence, and release classes
+- `artifacts/` stores emitted receipts, bundles, release packs, and replay artifacts
 
-- `cmd/sros` - minimal root CLI bootstrap
-- `internal/core` - inherited core planes (boot, runtime, orch, gov, mem, mirror, trace, provenance, sr8, sr9)
-- `internal/fabric` - local tool fabric surface (registry, harness, connectors, shell, patch, fileio, web, browser, mcpclient)
-- `internal/ace` - ACE planes (intake, routing, delegation, research, governance, evaluation, skills, promptunits)
-- `internal/shared` - shared primitives/config/error/id/validation envelope
-- `contracts` - canonical run/trace/policy/memory/release contract surfaces
-- `artifacts`, `tests`, `docs`, `examples`, `scripts` - lifecycle support zones
+## Ownership zones
 
-## Non-Widening Constraint
+- `cmd/sros` - operator CLI
+- `internal/core` - kernel planes and persistence seams
+- `internal/fabric` - governed capability fabric
+- `contracts` - canonical contract truth
+- `docs`, `examples`, `scripts`, `tests` - developer and OSS support surface
 
-W01 does not add command families, runtime engines, subsystem logic, daemon surfaces, or enterprise shell width.
+## Exclusions
+
+- no hosted APIs
+- no daemon-first shell
+- no enterprise auth, RBAC, or admin UI

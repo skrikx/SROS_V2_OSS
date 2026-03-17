@@ -37,6 +37,9 @@ func renderError(ctx *commands.Context, err error) ExitCode {
 		_ = json.NewEncoder(ctx.Stderr).Encode(errorEnvelope{Error: message, Kind: string(kind)})
 	} else {
 		writeLine(ctx.Stderr, fmt.Sprintf("error: %s", message))
+		if hint := operatorHint(kind, message); hint != "" {
+			writeLine(ctx.Stderr, "next: "+hint)
+		}
 	}
 
 	switch kind {
@@ -51,6 +54,22 @@ func renderError(ctx *commands.Context, err error) ExitCode {
 	default:
 		return ExitInternalError
 	}
+}
+
+func operatorHint(kind commands.ErrorKind, message string) string {
+	switch kind {
+	case commands.KindOperator:
+		if message != "" {
+			return "run the matching '--help' command for the exact flags and examples"
+		}
+	case commands.KindConfig:
+		return "check .env.example, local config, or run 'sros verify' for bootstrap hints"
+	case commands.KindEnvironment:
+		return "check local runtime dependencies, file paths, or run 'sros verify' for readiness details"
+	case commands.KindDeferred:
+		return "use a wired command path or inspect status to confirm the active boundary set"
+	}
+	return ""
 }
 
 func writeLine(w io.Writer, line string) {

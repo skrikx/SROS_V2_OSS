@@ -1,6 +1,7 @@
 package provenance
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"os"
@@ -33,6 +34,11 @@ func (s *Service) EmitBundle(runID ids.RunID, artifacts []evidence.ArtifactRef, 
 	path := filepath.Join(s.root, "bundles", string(bundle.BundleID)+".json")
 	if err := os.WriteFile(path, append(data, '\n'), 0o644); err != nil {
 		return evidence.Bundle{}, fmt.Errorf("write bundle: %w", err)
+	}
+	if s.pgStore != nil {
+		if err := s.pgStore.SaveBundle(context.Background(), bundle); err != nil {
+			return evidence.Bundle{}, err
+		}
 	}
 	return bundle, nil
 }

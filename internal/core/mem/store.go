@@ -1,6 +1,7 @@
 package mem
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"os"
@@ -60,6 +61,7 @@ type Store struct {
 	ledger   *MutationLedger
 	branches *BranchManager
 	recall   *RecallIndex
+	pgStore  *PostgresStore
 }
 
 func NewStore(root string, now func() time.Time) (*Store, error) {
@@ -91,6 +93,10 @@ func NewStore(root string, now func() time.Time) (*Store, error) {
 
 func (s *Store) Root() string { return s.root }
 
+func (s *Store) SetPostgresStore(store *PostgresStore) {
+	s.pgStore = store
+}
+
 func (s *Store) SetMutationHook(hook func(cmemory.MemoryMutation)) {
 	s.ledger.SetHook(hook)
 }
@@ -113,6 +119,14 @@ func (s *Store) Upsert(input MutationInput) (cmemory.MemoryMutation, error) {
 	if err := s.writeRecord(record); err != nil {
 		return cmemory.MemoryMutation{}, err
 	}
+	if s.pgStore != nil {
+		if err := s.pgStore.SaveMutation(context.Background(), mutation); err != nil {
+			return cmemory.MemoryMutation{}, err
+		}
+		if err := s.pgStore.SaveRecord(context.Background(), record); err != nil {
+			return cmemory.MemoryMutation{}, err
+		}
+	}
 	branch, err := s.loadOrDefaultBranch(input.Scope, input.OperatorID, input.Branch)
 	if err != nil {
 		return cmemory.MemoryMutation{}, err
@@ -120,6 +134,11 @@ func (s *Store) Upsert(input MutationInput) (cmemory.MemoryMutation, error) {
 	branch.HeadMutationID = mutation.MutationID
 	if err := s.branches.Save(branch); err != nil {
 		return cmemory.MemoryMutation{}, err
+	}
+	if s.pgStore != nil {
+		if err := s.pgStore.SaveBranch(context.Background(), branch); err != nil {
+			return cmemory.MemoryMutation{}, err
+		}
 	}
 	return mutation, nil
 }
@@ -253,6 +272,11 @@ func (s *Store) ApplyBranchFile(path string) (map[string]any, error) {
 	if err := s.branches.Save(record); err != nil {
 		return nil, err
 	}
+	if s.pgStore != nil {
+		if err := s.pgStore.SaveBranch(context.Background(), record); err != nil {
+			return nil, err
+		}
+	}
 	head := file.BaseMutationID
 	for _, entry := range file.Entries {
 		mutation, err := s.Upsert(MutationInput{
@@ -320,6 +344,11 @@ func (s *Store) Rewind(branchID ids.BranchID, target ids.MemoryMutationID, opera
 	if err := s.branches.Save(branch); err != nil {
 		return err
 	}
+	if s.pgStore != nil {
+		if err := s.pgStore.SaveBranch(context.Background(), branch); err != nil {
+			return err
+		}
+	}
 	_, err = s.ledger.Append(MutationInput{
 		Scope: ScopeBinding{
 			Scope:       targetEntry.Scope,
@@ -353,7 +382,11 @@ func (s *Store) SessionTree() ([]SessionNode, error) {
 	if err != nil {
 		return nil, err
 	}
-	return BuildSessionTree(entries), nil
+	tree := BuildSessionTree(entries)
+	if s.pgStore != nil && len(tree) > 0 {
+		_ = s.pgStore.SaveSessionTree(context.Background(), tree[0].SessionID, tree)
+	}
+	return tree, nil
 }
 
 func (s *Store) PrunePlan(cutoff time.Time) (PrunePlan, error) {

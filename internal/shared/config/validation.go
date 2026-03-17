@@ -29,6 +29,9 @@ func Validate(cfg Config) error {
 	if cfg.OutputFormat != "text" && cfg.OutputFormat != "json" {
 		return fmt.Errorf("output_format must be one of [text, json]")
 	}
+	if err := ValidateDatabase(cfg.Database); err != nil {
+		return err
+	}
 
 	return nil
 }

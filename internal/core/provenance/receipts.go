@@ -1,6 +1,7 @@
 package provenance
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"os"
@@ -37,6 +38,11 @@ func (s *Service) EmitReceipt(runID ids.RunID, kind evidence.ReceiptKind, status
 	path := filepath.Join(s.root, "receipts", string(receipt.ReceiptID)+".json")
 	if err := os.WriteFile(path, append(data, '\n'), 0o644); err != nil {
 		return evidence.Receipt{}, fmt.Errorf("write receipt: %w", err)
+	}
+	if s.pgStore != nil {
+		if err := s.pgStore.SaveReceipt(context.Background(), receipt); err != nil {
+			return evidence.Receipt{}, err
+		}
 	}
 	return receipt, nil
 }

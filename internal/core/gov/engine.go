@@ -26,6 +26,7 @@ type Engine struct {
 	auditRoot    string
 	now          func() time.Time
 	decisionHook func(policy.PolicyDecision)
+	store        *PolicyStore
 }
 
 func NewEngine(opts Options) (*Engine, error) {
@@ -108,16 +109,19 @@ func (e *Engine) Evaluate(_ context.Context, req Request) (Result, error) {
 	if !sandboxAllows(profile, req.Capability) {
 		decision := newDecision(e.bundle, req, policy.VerdictDeny, boundary, profile.Name, "sandbox profile does not permit capability", e.now())
 		_ = writeAudit(e.auditRoot, decision, e.now())
+		e.persistDecision(decision)
 		return Result{Decision: decision}, nil
 	}
 	if ok && len(rule.AllowedBoundaries) > 0 && !containsBoundary(rule.AllowedBoundaries, boundary) {
 		decision := newDecision(e.bundle, req, policy.VerdictDeny, boundary, profile.Name, "trust boundary not allowed by policy", e.now())
 		_ = writeAudit(e.auditRoot, decision, e.now())
+		e.persistDecision(decision)
 		return Result{Decision: decision}, nil
 	}
 	if verdict, reason := applyBreakGlass(e.bundle, rulePtr(rule, ok), req.BreakGlass); verdict != "" {
 		decision := newDecision(e.bundle, req, verdict, boundary, profile.Name, reason, e.now())
 		_ = writeAudit(e.auditRoot, decision, e.now())
+		e.persistDecision(decision)
 		return Result{Decision: decision}, nil
 	}
 	verdict := permissionVerdict(e.bundle, req.Capability, req.RiskClass)
@@ -138,10 +142,18 @@ func (e *Engine) Evaluate(_ context.Context, req Request) (Result, error) {
 	if err := writeAudit(e.auditRoot, decision, e.now()); err != nil {
 		return Result{}, err
 	}
+	e.persistDecision(decision)
 	if e.decisionHook != nil {
 		e.decisionHook(decision)
 	}
 	return Result{Decision: decision}, nil
+}
+
+func (e *Engine) persistDecision(decision policy.PolicyDecision) {
+	if e.store == nil {
+		return
+	}
+	_ = e.store.SaveDecision(context.Background(), decision)
 }
 
 func (e *Engine) Bundle() policy.Bundle {
@@ -150,6 +162,10 @@ func (e *Engine) Bundle() policy.Bundle {
 
 func (e *Engine) SetDecisionHook(hook func(policy.PolicyDecision)) {
 	e.decisionHook = hook
+}
+
+func (e *Engine) SetPolicyStore(store *PolicyStore) {
+	e.store = store
 }
 
 func matchCapability(bundle policy.Bundle, capability string) (policy.CapabilityPolicy, bool) {

@@ -1,6 +1,7 @@
 package trace
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"os"
@@ -11,6 +12,7 @@ import (
 
 type Ledger struct {
 	root string
+	pg   *PostgresLedger
 }
 
 func NewLedger(root string) (*Ledger, error) {
@@ -26,6 +28,10 @@ func NewLedger(root string) (*Ledger, error) {
 }
 
 func (l *Ledger) Root() string { return l.root }
+
+func (l *Ledger) SetPostgresLedger(pg *PostgresLedger) {
+	l.pg = pg
+}
 
 func (l *Ledger) Append(event ctrace.TraceEvent) error {
 	if errs := ctrace.ValidateEvent(event); len(errs) > 0 {
@@ -44,6 +50,9 @@ func (l *Ledger) Append(event ctrace.TraceEvent) error {
 	if _, err := f.Write(append(data, '\n')); err != nil {
 		return fmt.Errorf("append trace event: %w", err)
 	}
+	if l.pg != nil {
+		return l.pg.SaveEvent(context.Background(), event)
+	}
 	return nil
 }
 
@@ -55,6 +64,9 @@ func (l *Ledger) SaveSpan(span ctrace.Span) error {
 	path := filepath.Join(l.root, "spans", string(span.SpanID)+".json")
 	if err := os.WriteFile(path, append(data, '\n'), 0o644); err != nil {
 		return fmt.Errorf("write span: %w", err)
+	}
+	if l.pg != nil {
+		return l.pg.SaveSpan(context.Background(), span)
 	}
 	return nil
 }

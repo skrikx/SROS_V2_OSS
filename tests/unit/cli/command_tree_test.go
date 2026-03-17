@@ -14,8 +14,11 @@ func TestCommandTreeContainsRequiredCommands(t *testing.T) {
 	_, toolsHelp, _ := runCLI(t, []string{"tools", "--help"}, nil)
 	_, connectorsHelp, _ := runCLI(t, []string{"connectors", "--help"}, nil)
 	_, mcpHelp, _ := runCLI(t, []string{"mcp", "--help"}, nil)
+	_, releaseHelp, _ := runCLI(t, []string{"release", "--help"}, nil)
+	_, testHelp, _ := runCLI(t, []string{"test", "--help"}, nil)
+	_, examplesHelp, _ := runCLI(t, []string{"examples", "--help"}, nil)
 
-	combined := strings.Join([]string{rootHelp, toolsHelp, connectorsHelp, mcpHelp}, "\n")
+	combined := strings.Join([]string{rootHelp, toolsHelp, connectorsHelp, mcpHelp, releaseHelp, testHelp, examplesHelp}, "\n")
 	required := []string{
 		"init",
 		"bootstrap",
@@ -43,6 +46,14 @@ func TestCommandTreeContainsRequiredCommands(t *testing.T) {
 		"connectors",
 		"mcp",
 		"ingest",
+		"replay",
+		"verify",
+		"release",
+		"pack",
+		"test",
+		"smoke",
+		"examples",
+		"scaffold",
 	}
 	for _, req := range required {
 		if !strings.Contains(combined, req) {

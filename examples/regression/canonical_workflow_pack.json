@@ -1,0 +1,9 @@
+{
+  "name": "canonical_workflow_pack",
+  "steps": [
+    "compile",
+    "run",
+    "trace replay",
+    "receipts export"
+  ]
+}

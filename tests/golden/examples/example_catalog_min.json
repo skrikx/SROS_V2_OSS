@@ -1,0 +1,8 @@
+{
+  "runs": 2,
+  "tools": 3,
+  "traces": 2,
+  "receipts": 2,
+  "releases": 1,
+  "regression": 1
+}

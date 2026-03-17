@@ -1,0 +1,15 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: sros-v2-postgres
+    environment:
+      POSTGRES_USER: sros
+      POSTGRES_PASSWORD: sros
+      POSTGRES_DB: sros_v2
+    ports:
+      - "54329:5432"
+    volumes:
+      - sros_v2_pg:/var/lib/postgresql/data
+
+volumes:
+  sros_v2_pg:

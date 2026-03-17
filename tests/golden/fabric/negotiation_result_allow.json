@@ -1,0 +1,7 @@
+{
+  "allowed": true,
+  "reason": "policy and environment compatible",
+  "policy_fit": "policy_bound",
+  "environment_fit": "local_safe",
+  "selected_capability": "local.patch"
+}

@@ -1,7 +1,8 @@
 # Governed Tool Contracts
 
-W06 introduces governed capability semantics for tool, connector, and MCP boundaries.
+W09 makes the local governed fabric real.
 
-- `tool.*` capabilities can be policy-validated and listed through GOV-backed surfaces.
-- These commands do not execute tools or connectors.
-- Real fabric execution remains deferred to W09.
+- `manifest.go` defines the canonical capability manifest and lifecycle states.
+- `result.go` defines validation, search, and invocation result shapes.
+- `negotiation.go` defines shortlist and lawful selection output.
+- `envelope.go` defines connector auth envelopes without exposing raw credentials in operator surfaces.

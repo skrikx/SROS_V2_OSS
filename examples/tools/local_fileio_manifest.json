@@ -1,0 +1,20 @@
+{
+  "manifest_version": "v2.0",
+  "name": "example.local.fileio",
+  "title": "Example Local File IO",
+  "description": "Example governed file IO capability",
+  "version": "1.0.0",
+  "class": "tool.local.fileio",
+  "domain": "workspace",
+  "policy_class": "fileio.read",
+  "status": "draft",
+  "trust_boundary": "local_fs",
+  "sandbox_profiles": [
+    "read_only",
+    "patch_only"
+  ],
+  "capabilities": [
+    "fileio.read",
+    "fileio.write"
+  ]
+}

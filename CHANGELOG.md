@@ -2,7 +2,7 @@
 
 ## 2026-03-17
 
-- Initialized SROS V2 W01 scaffold.
-- Added constitution-bound repository docs.
-- Added minimal compile-safe `cmd/sros` bootstrap.
-- Established canonical ownership directory tree for W02+.
+- sealed W09 governed fabric registry, harness, connector envelope, and MCP ingress surfaces
+- added W10 Postgres persistence adapters and migration files
+- added verify, replay, release pack, test smoke, examples run, and scaffold CLI surfaces
+- added docs tree, contributor templates, local bootstrap scripts, replay/regression/e2e tests, and release baseline artifacts

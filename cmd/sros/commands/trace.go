@@ -2,6 +2,7 @@ package commands
 
 import (
 	"flag"
+	"fmt"
 	"strings"
 
 	"srosv2/internal/shared/ids"
@@ -10,8 +11,12 @@ import (
 func newTraceCommand() *Command {
 	cmd := &Command{
 		Name:    "trace",
-		Summary: "Trace evidence surfaces",
+		Summary: "Trace evidence surfaces for inspection and replay",
 		Usage:   "sros trace <inspect|replay>",
+		Examples: []string{
+			"sros trace inspect --input examples/trace/run_trace_min.json",
+			"sros trace replay --run-id run_001",
+		},
 	}
 	cmd.Subcommands = []*Command{
 		{
@@ -34,16 +39,16 @@ func newTraceCommand() *Command {
 					if err != nil {
 						return EnvironmentError(err.Error())
 					}
-					return writeOutput(ctx, "trace inspected", data)
+					return writeOutput(ctx, "trace inspected\nfocus: payload shape and replay readiness", data)
 				}
 				if strings.TrimSpace(*runID) == "" {
-					return OperatorError("trace inspect requires --input or --run-id")
+					return missingFlagError("trace inspect", "--input or --run-id", "run 'sros trace inspect --help'")
 				}
 				events, err := ctx.Bundle.Trace.Reader.Events(ids.RunID(strings.TrimSpace(*runID)))
 				if err != nil {
 					return EnvironmentError(err.Error())
 				}
-				return writeOutput(ctx, "trace inspected", map[string]any{"run_id": strings.TrimSpace(*runID), "events": events})
+				return writeOutput(ctx, fmt.Sprintf("trace inspected\nrun_id: %s\nevents: %d", strings.TrimSpace(*runID), len(events)), map[string]any{"run_id": strings.TrimSpace(*runID), "events": events})
 			},
 		},
 		{
@@ -71,13 +76,13 @@ func newTraceCommand() *Command {
 					}
 				}
 				if strings.TrimSpace(*runID) == "" {
-					return OperatorError("trace replay requires --input or --run-id")
+					return missingFlagError("trace replay", "--input or --run-id", "run 'sros trace replay --help'")
 				}
 				result, err := ctx.Bundle.Trace.Replay.Replay(ids.RunID(strings.TrimSpace(*runID)))
 				if err != nil {
 					return EnvironmentError(err.Error())
 				}
-				return writeOutput(ctx, "trace replay completed", map[string]any{"replay": result})
+				return writeOutput(ctx, "trace replay completed\nfocus: replayable append-only lineage", map[string]any{"replay": result})
 			},
 		},
 	}

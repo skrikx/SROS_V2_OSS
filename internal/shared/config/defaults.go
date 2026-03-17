@@ -16,5 +16,12 @@ func DefaultConfig(cwd string) Config {
 		MemoryStorePath:  filepath.Join(root, "artifacts", "memory"),
 		TraceStorePath:   filepath.Join(root, "artifacts", "trace"),
 		OutputFormat:     "text",
+		Database: DatabaseConfig{
+			Enabled:       false,
+			Driver:        "postgres",
+			URL:           "",
+			MigrationsDir: filepath.Join(root, "migrations"),
+			Schema:        "public",
+		},
 	}
 }
