@@ -18,12 +18,14 @@ type Options struct {
 	ArtifactRoot string
 	Now          func() time.Time
 	Bundle       *policy.Bundle
+	DecisionHook func(policy.PolicyDecision)
 }
 
 type Engine struct {
-	bundle    policy.Bundle
-	auditRoot string
-	now       func() time.Time
+	bundle       policy.Bundle
+	auditRoot    string
+	now          func() time.Time
+	decisionHook func(policy.PolicyDecision)
 }
 
 func NewEngine(opts Options) (*Engine, error) {
@@ -49,9 +51,10 @@ func NewEngine(opts Options) (*Engine, error) {
 		now = func() time.Time { return time.Now().UTC() }
 	}
 	return &Engine{
-		bundle:    bundle,
-		auditRoot: filepath.Join(opts.ArtifactRoot, "gov"),
-		now:       now,
+		bundle:       bundle,
+		auditRoot:    filepath.Join(opts.ArtifactRoot, "gov"),
+		now:          now,
+		decisionHook: opts.DecisionHook,
 	}, nil
 }
 
@@ -135,11 +138,18 @@ func (e *Engine) Evaluate(_ context.Context, req Request) (Result, error) {
 	if err := writeAudit(e.auditRoot, decision, e.now()); err != nil {
 		return Result{}, err
 	}
+	if e.decisionHook != nil {
+		e.decisionHook(decision)
+	}
 	return Result{Decision: decision}, nil
 }
 
 func (e *Engine) Bundle() policy.Bundle {
 	return e.bundle
+}
+
+func (e *Engine) SetDecisionHook(hook func(policy.PolicyDecision)) {
+	e.decisionHook = hook
 }
 
 func matchCapability(bundle policy.Bundle, capability string) (policy.CapabilityPolicy, bool) {

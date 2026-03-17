@@ -1,0 +1,12 @@
+{
+  "contract_version": "v2.0",
+  "event_id": "evt_fixture",
+  "trace_id": "trace_001",
+  "span_id": "span_001",
+  "run_id": "run_001",
+  "event_type": "run.started",
+  "occurred_at": "2026-03-17T12:00:00Z",
+  "payload": {
+    "state": "started"
+  }
+}

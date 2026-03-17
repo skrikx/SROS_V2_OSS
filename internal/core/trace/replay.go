@@ -5,12 +5,12 @@ import (
 )
 
 type ReplayResult struct {
-	RunID        ids.RunID        `json:"run_id"`
-	EventCount   int              `json:"event_count"`
-	States       []string         `json:"states"`
-	ReceiptRefs  []string         `json:"receipt_refs,omitempty"`
-	ArtifactRefs []string         `json:"artifact_refs,omitempty"`
-	Mode         string           `json:"mode"`
+	RunID        ids.RunID `json:"run_id"`
+	EventCount   int       `json:"event_count"`
+	States       []string  `json:"states"`
+	ReceiptRefs  []string  `json:"receipt_refs,omitempty"`
+	ArtifactRefs []string  `json:"artifact_refs,omitempty"`
+	Mode         string    `json:"mode"`
 }
 
 type Replayer struct {

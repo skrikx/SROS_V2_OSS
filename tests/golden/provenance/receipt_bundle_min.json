@@ -1,0 +1,18 @@
+{
+  "bundle_id": "bundle_fixture",
+  "run_id": "run_001",
+  "artifact_refs": [
+    {
+      "artifact_id": "art_fixture",
+      "path": "artifacts/runtime/session.json",
+      "digest_algo": "sha256",
+      "digest": "abc123"
+    }
+  ],
+  "receipt_refs": [
+    "rcpt_fixture"
+  ],
+  "hash_chain": [
+    "hash1"
+  ]
+}

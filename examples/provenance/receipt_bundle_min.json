@@ -1,0 +1,19 @@
+{
+  "bundle_id": "bundle_min",
+  "run_id": "run_001",
+  "artifact_refs": [
+    {
+      "artifact_id": "art_001",
+      "path": "artifacts/runtime/session.json",
+      "digest_algo": "sha256",
+      "digest": "abc123",
+      "media_type": "application/json"
+    }
+  ],
+  "receipt_refs": [
+    "rcpt_001"
+  ],
+  "hash_chain": [
+    "hash_001"
+  ]
+}

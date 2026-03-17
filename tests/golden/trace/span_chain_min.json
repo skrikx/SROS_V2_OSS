@@ -1,0 +1,8 @@
+{
+  "trace_id": "trace_001",
+  "span_id": "span_root",
+  "name": "runtime.run",
+  "attributes": {
+    "run_id": "run_001"
+  }
+}

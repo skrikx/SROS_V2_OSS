@@ -37,11 +37,13 @@ func newInspectCommand() *Command {
 				report[rel] = err == nil
 			}
 			payload := map[string]any{
-				"workspace_root": ctx.Config.WorkspaceRoot,
-				"required_paths": report,
-				"mode":           ctx.Bundle.Mode,
-				"memory_wired":   ctx.Bundle.Memory != nil,
-				"mirror_wired":   ctx.Bundle.Mirror != nil,
+				"workspace_root":   ctx.Config.WorkspaceRoot,
+				"required_paths":   report,
+				"mode":             ctx.Bundle.Mode,
+				"memory_wired":     ctx.Bundle.Memory != nil,
+				"mirror_wired":     ctx.Bundle.Mirror != nil,
+				"trace_wired":      ctx.Bundle.Trace != nil,
+				"provenance_wired": ctx.Bundle.Provenance != nil,
 			}
 			return writeOutput(ctx, "inspect: repository wiring snapshot captured", payload)
 		},

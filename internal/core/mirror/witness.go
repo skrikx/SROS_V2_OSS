@@ -30,5 +30,8 @@ func (e *Engine) writeWitness(event WitnessEvent) error {
 	if err := os.WriteFile(path, append(data, '\n'), 0o644); err != nil {
 		return fmt.Errorf("write witness event: %w", err)
 	}
+	if e.witnessHook != nil {
+		e.witnessHook(event)
+	}
 	return nil
 }

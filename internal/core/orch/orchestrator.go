@@ -14,6 +14,7 @@ import (
 type Options struct {
 	ArtifactRoot string
 	Now          func() time.Time
+	EventHook    func(string, map[string]any)
 }
 
 type Orchestrator struct {
@@ -22,6 +23,7 @@ type Orchestrator struct {
 	bus          *Bus
 	router       *CheckpointRouter
 	now          func() time.Time
+	eventHook    func(string, map[string]any)
 }
 
 func New(opts Options) (*Orchestrator, error) {
@@ -46,6 +48,7 @@ func New(opts Options) (*Orchestrator, error) {
 		bus:          NewBus(),
 		router:       router,
 		now:          now,
+		eventHook:    opts.EventHook,
 	}, nil
 }
 
@@ -59,6 +62,9 @@ func (o *Orchestrator) Hydrate(sessionID string, contract runcontract.RunContrac
 	}
 	if o.bus != nil {
 		o.bus.Publish(Event{Type: "plan.hydrated", SessionID: sessionID, Message: "orchestration plan hydrated", At: o.now()})
+	}
+	if o.eventHook != nil {
+		o.eventHook("plan.hydrated", map[string]any{"session_id": sessionID, "run_id": string(contract.RunID)})
 	}
 	return plan, nil
 }
@@ -79,7 +85,14 @@ func (o *Orchestrator) Execute(ctx context.Context, plan Plan, decide DecisionFu
 	if err := o.writeJSON(plan.SessionID+"_events.json", o.bus.Events()); err != nil {
 		return ExecutionResult{}, err
 	}
+	if o.eventHook != nil {
+		o.eventHook("plan.executed", map[string]any{"session_id": plan.SessionID, "run_id": plan.RunID, "completed": result.Completed})
+	}
 	return result, nil
+}
+
+func (o *Orchestrator) SetEventHook(hook func(string, map[string]any)) {
+	o.eventHook = hook
 }
 
 func (o *Orchestrator) writeJSON(name string, value any) error {

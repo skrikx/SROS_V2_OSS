@@ -42,16 +42,18 @@ func newStatusCommand() *Command {
 			}
 
 			payload := map[string]any{
-				"mode":          ctx.Bundle.Mode,
-				"config_source": ctx.ConfigSource,
-				"workspace":     ctx.Config.WorkspaceRoot,
-				"boundaries":    ctx.Bundle.Boundaries,
-				"runtime":       snapshot,
-				"memory_wired":  ctx.Bundle.Memory != nil,
-				"mirror_wired":  ctx.Bundle.Mirror != nil,
+				"mode":             ctx.Bundle.Mode,
+				"config_source":    ctx.ConfigSource,
+				"workspace":        ctx.Config.WorkspaceRoot,
+				"boundaries":       ctx.Bundle.Boundaries,
+				"runtime":          snapshot,
+				"memory_wired":     ctx.Bundle.Memory != nil,
+				"mirror_wired":     ctx.Bundle.Mirror != nil,
+				"trace_wired":      ctx.Bundle.Trace != nil,
+				"provenance_wired": ctx.Bundle.Provenance != nil,
 			}
 			text := fmt.Sprintf(
-				"mode: %s\nconfig_source: %s\nworkspace: %s\nruntime_summary: %s\nruntime_session: %s\nruntime_state: %s\nlatest_checkpoint: %s\nlatest_rollback: %s\nwaiting_approval: %s\nlatest_mutation: %s\nlatest_witness: %s\nmemory_wired: %t\nmirror_wired: %t\n%s",
+				"mode: %s\nconfig_source: %s\nworkspace: %s\nruntime_summary: %s\nruntime_session: %s\nruntime_state: %s\nlatest_checkpoint: %s\nlatest_rollback: %s\nwaiting_approval: %s\nlatest_mutation: %s\nlatest_witness: %s\nmemory_wired: %t\nmirror_wired: %t\ntrace_wired: %t\nprovenance_wired: %t\n%s",
 				ctx.Bundle.Mode,
 				ctx.ConfigSource,
 				ctx.Config.WorkspaceRoot,
@@ -65,6 +67,8 @@ func newStatusCommand() *Command {
 				emptyFallback(snapshot.LatestWitnessID, "(none)"),
 				ctx.Bundle.Memory != nil,
 				ctx.Bundle.Mirror != nil,
+				ctx.Bundle.Trace != nil,
+				ctx.Bundle.Provenance != nil,
 				formatBoundaries(ctx.Bundle.Boundaries),
 			)
 			return writeOutput(ctx, text, payload)

@@ -9,12 +9,16 @@ import (
 	"strings"
 	"time"
 
+	"srosv2/contracts/evidence"
 	cmemory "srosv2/contracts/memory"
 	"srosv2/contracts/runcontract"
+	ctrace "srosv2/contracts/trace"
 	"srosv2/internal/core/gov"
 	"srosv2/internal/core/mem"
 	"srosv2/internal/core/mirror"
 	"srosv2/internal/core/orch"
+	coreprov "srosv2/internal/core/provenance"
+	coretrace "srosv2/internal/core/trace"
 	"srosv2/internal/shared/ids"
 )
 
@@ -27,6 +31,8 @@ type Options struct {
 	Governor     *gov.Engine
 	Memory       *mem.Store
 	Mirror       *mirror.Engine
+	Trace        *coretrace.Service
+	Provenance   *coreprov.Service
 }
 
 type Manager struct {
@@ -38,6 +44,8 @@ type Manager struct {
 	governor     *gov.Engine
 	memory       *mem.Store
 	mirror       *mirror.Engine
+	trace        *coretrace.Service
+	provenance   *coreprov.Service
 }
 
 func NewManager(opts Options) (*Manager, error) {
@@ -65,6 +73,8 @@ func NewManager(opts Options) (*Manager, error) {
 		governor:     opts.Governor,
 		memory:       opts.Memory,
 		mirror:       opts.Mirror,
+		trace:        opts.Trace,
+		provenance:   opts.Provenance,
 	}, nil
 }
 
@@ -90,6 +100,14 @@ func (m *Manager) Run(ctx context.Context, req RunRequest) (RuntimeResponse, err
 	now := m.now().UTC()
 	session := NewSession(contract, contractPath, now)
 	session.TopologyBinding = decision.TopologyBinding
+
+	if err := m.emitTrace(contract.RunID, contract.TraceID, ids.SpanID(""), coretrace.EventRunStarted, map[string]any{
+		"session_id":    session.SessionID,
+		"contract_path": contractPath,
+		"risk_class":    contract.RiskClass,
+	}); err != nil {
+		return RuntimeResponse{}, err
+	}
 
 	if err := m.recordMemoryMutation(&session, "runtime.session", "created", "runtime session created"); err != nil {
 		return RuntimeResponse{}, err
@@ -144,12 +162,23 @@ func (m *Manager) Run(ctx context.Context, req RunRequest) (RuntimeResponse, err
 			if err := Transition(&session, SessionStateFailedSafe, executed.Decision.Reason, now); err != nil {
 				return RuntimeResponse{}, err
 			}
+			if err := m.emitTrace(contract.RunID, contract.TraceID, ids.SpanID(""), coretrace.EventPolicyDecision, map[string]any{"verdict": "deny", "reason": executed.Decision.Reason}); err != nil {
+				return RuntimeResponse{}, err
+			}
 		}
 	}
 
 	if session.State == SessionStateWaitingForInput || session.State == SessionStateFailedSafe {
+		if err := m.emitTrace(contract.RunID, contract.TraceID, ids.SpanID(""), coretrace.EventStateTransition, TransitionPayload(SessionStatePlanned, session.State, session.Reason, now)); err != nil {
+			return RuntimeResponse{}, err
+		}
 		if err := m.observeMirror(&session); err != nil {
 			return RuntimeResponse{}, err
+		}
+		if isTerminal(session.State) {
+			if err := m.emitTerminalEvidence(&session); err != nil {
+				return RuntimeResponse{}, err
+			}
 		}
 		if err := m.store.SaveSession(session); err != nil {
 			return RuntimeResponse{}, err
@@ -171,14 +200,22 @@ func (m *Manager) Run(ctx context.Context, req RunRequest) (RuntimeResponse, err
 
 	switch decision.InitialState {
 	case SessionStateApproved:
+		from := session.State
 		if err := Transition(&session, SessionStateApproved, decision.Reason, now); err != nil {
+			return RuntimeResponse{}, err
+		}
+		if err := m.emitTrace(contract.RunID, contract.TraceID, ids.SpanID(""), coretrace.EventStateTransition, TransitionPayload(from, SessionStateApproved, decision.Reason, now)); err != nil {
 			return RuntimeResponse{}, err
 		}
 		if err := m.recordMemoryMutation(&session, "runtime.state", string(SessionStateApproved), decision.Reason); err != nil {
 			return RuntimeResponse{}, err
 		}
 		if decision.AutoStart {
+			from = session.State
 			if err := Transition(&session, SessionStateRunning, "runtime session started", now); err != nil {
+				return RuntimeResponse{}, err
+			}
+			if err := m.emitTrace(contract.RunID, contract.TraceID, ids.SpanID(""), coretrace.EventStateTransition, TransitionPayload(from, SessionStateRunning, "runtime session started", now)); err != nil {
 				return RuntimeResponse{}, err
 			}
 			if err := m.recordMemoryMutation(&session, "runtime.state", string(SessionStateRunning), "runtime session started"); err != nil {
@@ -186,7 +223,11 @@ func (m *Manager) Run(ctx context.Context, req RunRequest) (RuntimeResponse, err
 			}
 		}
 	case SessionStateWaitingForInput:
+		from := session.State
 		if err := Transition(&session, SessionStateWaitingForInput, decision.Reason, now); err != nil {
+			return RuntimeResponse{}, err
+		}
+		if err := m.emitTrace(contract.RunID, contract.TraceID, ids.SpanID(""), coretrace.EventStateTransition, TransitionPayload(from, SessionStateWaitingForInput, decision.Reason, now)); err != nil {
 			return RuntimeResponse{}, err
 		}
 		if err := m.recordMemoryMutation(&session, "runtime.state", string(SessionStateWaitingForInput), decision.Reason); err != nil {
@@ -203,7 +244,11 @@ func (m *Manager) Run(ctx context.Context, req RunRequest) (RuntimeResponse, err
 		}
 		session.ApprovalPath = m.store.ApprovalPath(session.SessionID)
 	case SessionStateFailedSafe:
+		from := session.State
 		if err := Transition(&session, SessionStateFailedSafe, decision.Reason, now); err != nil {
+			return RuntimeResponse{}, err
+		}
+		if err := m.emitTrace(contract.RunID, contract.TraceID, ids.SpanID(""), coretrace.EventStateTransition, TransitionPayload(from, SessionStateFailedSafe, decision.Reason, now)); err != nil {
 			return RuntimeResponse{}, err
 		}
 		if err := m.recordMemoryMutation(&session, "runtime.state", string(SessionStateFailedSafe), decision.Reason); err != nil {
@@ -215,6 +260,11 @@ func (m *Manager) Run(ctx context.Context, req RunRequest) (RuntimeResponse, err
 
 	if err := m.observeMirror(&session); err != nil {
 		return RuntimeResponse{}, err
+	}
+	if isTerminal(session.State) {
+		if err := m.emitTerminalEvidence(&session); err != nil {
+			return RuntimeResponse{}, err
+		}
 	}
 	if err := m.store.SaveSession(session); err != nil {
 		return RuntimeResponse{}, err
@@ -249,11 +299,19 @@ func (m *Manager) Resume(_ context.Context, req ResumeRequest) (RuntimeResponse,
 
 	switch session.State {
 	case SessionStatePaused:
+		from := session.State
 		if err := Transition(&session, SessionStateRunning, "operator resume", now); err != nil {
 			return RuntimeResponse{}, err
 		}
+		if err := m.emitTrace(ids.RunID(session.RunID), ids.TraceID(session.Contract.TraceID), ids.SpanID(""), coretrace.EventStateTransition, TransitionPayload(from, SessionStateRunning, "operator resume", now)); err != nil {
+			return RuntimeResponse{}, err
+		}
 	case SessionStateCheckpointed:
+		from := session.State
 		if err := Transition(&session, SessionStateRunning, "resume from checkpoint", now); err != nil {
+			return RuntimeResponse{}, err
+		}
+		if err := m.emitTrace(ids.RunID(session.RunID), ids.TraceID(session.Contract.TraceID), ids.SpanID(""), coretrace.EventStateTransition, TransitionPayload(from, SessionStateRunning, "resume from checkpoint", now)); err != nil {
 			return RuntimeResponse{}, err
 		}
 	case SessionStateWaitingForInput:
@@ -264,10 +322,18 @@ func (m *Manager) Resume(_ context.Context, req ResumeRequest) (RuntimeResponse,
 		if !approved {
 			return RuntimeResponse{}, fmt.Errorf("resume requires explicit operator approval while waiting_for_input")
 		}
+		from := session.State
 		if err := Transition(&session, SessionStateApproved, "operator approval acknowledged", now); err != nil {
 			return RuntimeResponse{}, err
 		}
+		if err := m.emitTrace(ids.RunID(session.RunID), ids.TraceID(session.Contract.TraceID), ids.SpanID(""), coretrace.EventStateTransition, TransitionPayload(from, SessionStateApproved, "operator approval acknowledged", now)); err != nil {
+			return RuntimeResponse{}, err
+		}
+		from = session.State
 		if err := Transition(&session, SessionStateRunning, "resume after approval", now); err != nil {
+			return RuntimeResponse{}, err
+		}
+		if err := m.emitTrace(ids.RunID(session.RunID), ids.TraceID(session.Contract.TraceID), ids.SpanID(""), coretrace.EventStateTransition, TransitionPayload(from, SessionStateRunning, "resume after approval", now)); err != nil {
 			return RuntimeResponse{}, err
 		}
 	default:
@@ -301,6 +367,9 @@ func (m *Manager) Pause(_ context.Context, req PauseRequest) (RuntimeResponse, e
 	if err := Transition(&session, SessionStatePaused, reason, now); err != nil {
 		return RuntimeResponse{}, err
 	}
+	if err := m.emitTrace(ids.RunID(session.RunID), ids.TraceID(session.Contract.TraceID), ids.SpanID(""), coretrace.EventStateTransition, TransitionPayload(SessionStateRunning, SessionStatePaused, reason, now)); err != nil {
+		return RuntimeResponse{}, err
+	}
 	if err := m.recordMemoryMutation(&session, "runtime.state", string(SessionStatePaused), reason); err != nil {
 		return RuntimeResponse{}, err
 	}
@@ -328,8 +397,14 @@ func (m *Manager) Checkpoint(_ context.Context, req CheckpointRequest) (RuntimeR
 	if err := Transition(&session, SessionStateCheckpointed, "checkpoint created", now); err != nil {
 		return RuntimeResponse{}, err
 	}
+	if err := m.emitTrace(ids.RunID(session.RunID), ids.TraceID(session.Contract.TraceID), ids.SpanID(""), coretrace.EventStateTransition, TransitionPayload(SessionStateRunning, SessionStateCheckpointed, "checkpoint created", now)); err != nil {
+		return RuntimeResponse{}, err
+	}
 	session.LatestCheckpointID = string(cp.Record.CheckpointID)
 	if err := m.recordMemoryMutation(&session, "runtime.checkpoint", session.LatestCheckpointID, "checkpoint created"); err != nil {
+		return RuntimeResponse{}, err
+	}
+	if err := m.emitTrace(ids.RunID(session.RunID), ids.TraceID(session.Contract.TraceID), ids.SpanID(""), coretrace.EventArtifactLinked, map[string]any{"checkpoint_id": session.LatestCheckpointID}); err != nil {
 		return RuntimeResponse{}, err
 	}
 	if err := m.observeMirror(&session); err != nil {
@@ -377,11 +452,17 @@ func (m *Manager) Rollback(_ context.Context, req RollbackRequest) (RuntimeRespo
 	if err := Transition(&session, SessionStateRolledBack, "rollback to checkpoint "+checkpointID, now); err != nil {
 		return RuntimeResponse{}, err
 	}
+	if err := m.emitTrace(ids.RunID(session.RunID), ids.TraceID(session.Contract.TraceID), ids.SpanID(""), coretrace.EventStateTransition, TransitionPayload(SessionStateCheckpointed, SessionStateRolledBack, "rollback to checkpoint "+checkpointID, now)); err != nil {
+		return RuntimeResponse{}, err
+	}
 	session.LatestRollbackID = string(rb.Record.RollbackID)
 	if err := m.recordMemoryMutation(&session, "runtime.rollback", session.LatestRollbackID, "rollback applied"); err != nil {
 		return RuntimeResponse{}, err
 	}
 	if err := m.observeMirror(&session); err != nil {
+		return RuntimeResponse{}, err
+	}
+	if err := m.emitTerminalEvidence(&session); err != nil {
 		return RuntimeResponse{}, err
 	}
 
@@ -550,11 +631,11 @@ func (m *Manager) MCPIngest(_ context.Context, path string) (map[string]any, err
 }
 
 func (m *Manager) Trace(context.Context, string) (map[string]any, error) {
-	return nil, fmt.Errorf("trace boundary remains deferred to W08")
+	return nil, fmt.Errorf("trace inspect requires explicit subcommand input in W08")
 }
 
 func (m *Manager) Receipts(context.Context, string) (map[string]any, error) {
-	return nil, fmt.Errorf("receipts boundary remains deferred to W08")
+	return nil, fmt.Errorf("receipts inspect requires explicit subcommand input in W08")
 }
 
 func (m *Manager) Memory(_ context.Context, query string) (map[string]any, error) {
@@ -569,6 +650,43 @@ func (m *Manager) Mirror(_ context.Context, path string) (map[string]any, error)
 		return nil, fmt.Errorf("mirror plane is not wired")
 	}
 	return m.mirror.StatusFromFile(path)
+}
+
+func (m *Manager) TraceInspect(path string) (map[string]any, error) {
+	if m.trace == nil {
+		return nil, fmt.Errorf("trace plane is not wired")
+	}
+	return m.trace.InspectFromFile(path)
+}
+
+func (m *Manager) TraceReplay(runID string) (map[string]any, error) {
+	if m.trace == nil {
+		return nil, fmt.Errorf("trace plane is not wired")
+	}
+	result, err := m.trace.Replay.Replay(ids.RunID(runID))
+	if err != nil {
+		return nil, err
+	}
+	return map[string]any{"replay": result}, nil
+}
+
+func (m *Manager) ExportReceiptBundle(path string) (map[string]any, error) {
+	if m.provenance == nil {
+		return nil, fmt.Errorf("provenance plane is not wired")
+	}
+	return m.provenance.ExportBundle(path)
+}
+
+func (m *Manager) ClosureFromFile(path string) (map[string]any, error) {
+	data, err := os.ReadFile(path)
+	if err != nil {
+		return nil, fmt.Errorf("read closure input: %w", err)
+	}
+	var payload map[string]any
+	if err := json.Unmarshal(data, &payload); err != nil {
+		return nil, fmt.Errorf("decode closure input: %w", err)
+	}
+	return payload, nil
 }
 
 func (m *Manager) recordMemoryMutation(session *RuntimeSession, key, value, reason string) error {
@@ -604,6 +722,13 @@ func (m *Manager) recordMemoryMutation(session *RuntimeSession, key, value, reas
 		return err
 	}
 	session.LatestMutationID = string(mutation.MutationID)
+	if err := m.emitTrace(ids.RunID(session.RunID), ids.TraceID(session.Contract.TraceID), ids.SpanID(""), coretrace.EventMemoryMutation, map[string]any{
+		"mutation_id": mutation.MutationID,
+		"key":         mutation.Key,
+		"lineage_ref": mutation.LineageRef,
+	}); err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -641,7 +766,74 @@ func (m *Manager) observeMirror(session *RuntimeSession) error {
 		return err
 	}
 	session.LatestWitnessID = event.WitnessID
+	if err := m.emitTrace(ids.RunID(session.RunID), ids.TraceID(session.Contract.TraceID), ids.SpanID(""), coretrace.EventMirrorWitness, map[string]any{
+		"witness_id": event.WitnessID,
+		"severity":   event.Severity,
+		"basis":      event.Basis,
+	}); err != nil {
+		return err
+	}
 	return nil
+}
+
+func (m *Manager) emitTrace(runID ids.RunID, traceID ids.TraceID, spanID ids.SpanID, kind ctrace.EventType, payload map[string]any) error {
+	if m.trace == nil || runID == "" || traceID == "" {
+		return nil
+	}
+	_, err := m.trace.Emit(runID, traceID, spanID, ids.SpanID(""), kind, payload)
+	return err
+}
+
+func (m *Manager) emitTerminalEvidence(session *RuntimeSession) error {
+	if !isTerminal(session.State) || m.provenance == nil {
+		return nil
+	}
+	traceRefs := []string{}
+	if m.trace != nil {
+		events, err := m.trace.Reader.Events(ids.RunID(session.RunID))
+		if err != nil {
+			return err
+		}
+		for _, event := range events {
+			traceRefs = append(traceRefs, string(event.EventID))
+		}
+	}
+	artifacts := []evidence.ArtifactRef{}
+	if session.PlanPath != "" {
+		if ref, err := m.provenance.LinkArtifact(ids.RunID(session.RunID), session.PlanPath, "application/json", "runtime_plan"); err == nil {
+			artifacts = append(artifacts, ref)
+		}
+	}
+	closure, closurePath, err := m.provenance.EmitClosure(ids.RunID(session.RunID), string(session.State), traceRefs, nil, nil)
+	if err != nil {
+		return err
+	}
+	if ref, err := m.provenance.LinkArtifact(ids.RunID(session.RunID), closurePath, "application/json", "closure_proof"); err == nil {
+		artifacts = append(artifacts, ref)
+	}
+	receipt, err := m.provenance.EmitReceipt(ids.RunID(session.RunID), evidence.ReceiptKindClosure, string(session.State), "terminal run closure proof emitted", artifacts, closurePath)
+	if err != nil {
+		return err
+	}
+	if err := m.emitTrace(ids.RunID(session.RunID), ids.TraceID(session.Contract.TraceID), ids.SpanID(""), coretrace.EventClosureProof, map[string]any{
+		"closure_status": closure.ClosureStatus,
+		"closure_ref":    closurePath,
+		"receipt_id":     receipt.ReceiptID,
+	}); err != nil {
+		return err
+	}
+	if m.trace != nil {
+		event, err := m.trace.Emit(ids.RunID(session.RunID), ids.TraceID(session.Contract.TraceID), ids.SpanID(""), ids.SpanID(""), coretrace.EventReceiptLinked, map[string]any{"receipt_id": receipt.ReceiptID, "kind": receipt.Kind, "status": receipt.Status})
+		if err != nil {
+			return err
+		}
+		coretrace.LinkReceipt(&event, receipt.ReceiptID)
+	}
+	return nil
+}
+
+func isTerminal(state SessionState) bool {
+	return state == SessionStateFailedSafe || state == SessionStateRolledBack || state == SessionStateCompleted
 }
 
 func loadRunContract(path string) (runcontract.RunContract, error) {

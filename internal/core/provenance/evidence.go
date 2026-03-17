@@ -16,7 +16,7 @@ func (s *Service) EmitBundle(runID ids.RunID, artifacts []evidence.ArtifactRef, 
 		return evidence.Bundle{}, err
 	}
 	bundle := evidence.Bundle{
-		BundleID:     ids.EvidenceBundleID("bundle_" + digestBytes([]byte(string(runID)+notes))[:12]),
+		BundleID:     ids.EvidenceBundleID("bundle_" + digestBytes([]byte(string(runID) + notes))[:12]),
 		RunID:        runID,
 		ArtifactRefs: artifacts,
 		ReceiptRefs:  receiptRefs,

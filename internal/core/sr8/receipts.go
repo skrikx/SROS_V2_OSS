@@ -27,6 +27,8 @@ func BuildCompileReceipt(
 		RunID:            contract.RunID,
 		Kind:             evidence.ReceiptKindStage,
 		EvidenceBundleID: ids.EvidenceBundleID("bundle_" + shortHash(requestID+"|bundle")),
+		Status:           "compiled",
+		ArtifactRefs:     bundleArtifacts,
 		Summary:          "compile completed; runtime admission not performed",
 		ClosureProofRef:  "sr8-compile-only",
 		CreatedAt:        now.UTC(),

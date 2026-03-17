@@ -20,7 +20,7 @@ func ValidateEvent(event TraceEvent) []error {
 	appendErr(validation.RequiredString("span_id", string(event.SpanID)))
 	appendErr(validation.RequiredString("run_id", string(event.RunID)))
 	appendErr(validation.Enum("event_type", string(event.EventType), []string{
-		"run.started", "run.completed", "policy.decision", "memory.mutation", "receipt.linked",
+		"run.started", "run.completed", "state.transition", "policy.decision", "orch.work_unit", "memory.mutation", "mirror.witness", "artifact.linked", "receipt.linked", "closure.proof",
 	}))
 	appendErr(validation.RequiredTime("occurred_at", event.OccurredAt))
 	return errs

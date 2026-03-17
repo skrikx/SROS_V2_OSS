@@ -5,6 +5,15 @@ import (
 	"time"
 )
 
+func TransitionPayload(from, to SessionState, reason string, at time.Time) map[string]any {
+	return map[string]any{
+		"from":   string(from),
+		"to":     string(to),
+		"reason": reason,
+		"at":     at.UTC().Format(time.RFC3339),
+	}
+}
+
 func Transition(session *RuntimeSession, to SessionState, reason string, at time.Time) error {
 	if err := EnsureTransition(session.State, to); err != nil {
 		return err

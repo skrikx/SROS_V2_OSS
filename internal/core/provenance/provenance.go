@@ -12,10 +12,10 @@ import (
 )
 
 type ArtifactProvenance struct {
-	RunID      ids.RunID         `json:"run_id"`
+	RunID      ids.RunID            `json:"run_id"`
 	Artifact   evidence.ArtifactRef `json:"artifact"`
-	LinkedAt   time.Time         `json:"linked_at"`
-	SourceKind string            `json:"source_kind"`
+	LinkedAt   time.Time            `json:"linked_at"`
+	SourceKind string               `json:"source_kind"`
 }
 
 type Service struct {

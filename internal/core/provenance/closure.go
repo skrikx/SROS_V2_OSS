@@ -11,13 +11,13 @@ import (
 )
 
 type ClosureProof struct {
-	RunID           ids.RunID       `json:"run_id"`
-	TerminalState   string          `json:"terminal_state"`
-	TraceRefs       []string        `json:"trace_refs"`
-	ReceiptRefs     []string        `json:"receipt_refs"`
-	ArtifactRefs    []string        `json:"artifact_refs"`
-	ClosureStatus   string          `json:"closure_status"`
-	GeneratedAt     time.Time       `json:"generated_at"`
+	RunID         ids.RunID `json:"run_id"`
+	TerminalState string    `json:"terminal_state"`
+	TraceRefs     []string  `json:"trace_refs"`
+	ReceiptRefs   []string  `json:"receipt_refs"`
+	ArtifactRefs  []string  `json:"artifact_refs"`
+	ClosureStatus string    `json:"closure_status"`
+	GeneratedAt   time.Time `json:"generated_at"`
 }
 
 func (s *Service) EmitClosure(runID ids.RunID, terminalState string, traceRefs, receiptRefs, artifactRefs []string) (ClosureProof, string, error) {

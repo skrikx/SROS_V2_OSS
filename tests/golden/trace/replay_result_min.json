@@ -1,0 +1,9 @@
+{
+  "run_id": "run_001",
+  "event_count": 2,
+  "states": [
+    "approved",
+    "running"
+  ],
+  "mode": "reconstructed_lineage"
+}

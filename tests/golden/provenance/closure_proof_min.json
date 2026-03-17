@@ -1,0 +1,15 @@
+{
+  "run_id": "run_001",
+  "terminal_state": "rolled_back",
+  "trace_refs": [
+    "evt_1"
+  ],
+  "receipt_refs": [
+    "rcpt_1"
+  ],
+  "artifact_refs": [
+    "art_1"
+  ],
+  "closure_status": "sealed",
+  "generated_at": "2026-03-17T12:00:00Z"
+}

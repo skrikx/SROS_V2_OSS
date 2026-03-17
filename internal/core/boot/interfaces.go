@@ -7,8 +7,10 @@ import (
 	"srosv2/internal/core/mem"
 	"srosv2/internal/core/mirror"
 	"srosv2/internal/core/orch"
+	coreprov "srosv2/internal/core/provenance"
 	"srosv2/internal/core/runtime"
 	"srosv2/internal/core/sr8"
+	coretrace "srosv2/internal/core/trace"
 )
 
 type BundleBuilder interface {
@@ -35,4 +37,6 @@ type ServiceSet struct {
 	Governor     *gov.Engine
 	Memory       *mem.Store
 	Mirror       *mirror.Engine
+	Trace        *coretrace.Service
+	Provenance   *coreprov.Service
 }

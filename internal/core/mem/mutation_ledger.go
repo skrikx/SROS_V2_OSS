@@ -27,6 +27,7 @@ type MutationInput struct {
 
 type MutationLedger struct {
 	root string
+	hook func(cmemory.MemoryMutation)
 }
 
 func newLedger(root string) (*MutationLedger, error) {
@@ -80,6 +81,9 @@ func (l *MutationLedger) Append(input MutationInput) (cmemory.MemoryMutation, er
 	if err := os.WriteFile(path, append(data, '\n'), 0o644); err != nil {
 		return cmemory.MemoryMutation{}, fmt.Errorf("write mutation: %w", err)
 	}
+	if l.hook != nil {
+		l.hook(mutation)
+	}
 	return mutation, nil
 }
 
@@ -105,4 +109,8 @@ func (l *MutationLedger) Entries() ([]cmemory.MemoryMutation, error) {
 	}
 	sort.Slice(out, func(i, j int) bool { return out[i].OccurredAt.Before(out[j].OccurredAt) })
 	return out, nil
+}
+
+func (l *MutationLedger) SetHook(hook func(cmemory.MemoryMutation)) {
+	l.hook = hook
 }

@@ -11,8 +11,9 @@ import (
 )
 
 type Engine struct {
-	root string
-	now  func() time.Time
+	root        string
+	now         func() time.Time
+	witnessHook func(WitnessEvent)
 }
 
 func New(root string, now func() time.Time) (*Engine, error) {
@@ -83,6 +84,10 @@ func (e *Engine) StatusFromFile(path string) (map[string]any, error) {
 
 func (e *Engine) WitnessFromFile(path string) (map[string]any, error) {
 	return e.StatusFromFile(path)
+}
+
+func (e *Engine) SetWitnessHook(hook func(WitnessEvent)) {
+	e.witnessHook = hook
 }
 
 func loadSnapshot(path string) (RuntimeSnapshot, error) {

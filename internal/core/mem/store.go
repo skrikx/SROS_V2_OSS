@@ -91,6 +91,10 @@ func NewStore(root string, now func() time.Time) (*Store, error) {
 
 func (s *Store) Root() string { return s.root }
 
+func (s *Store) SetMutationHook(hook func(cmemory.MemoryMutation)) {
+	s.ledger.SetHook(hook)
+}
+
 func (s *Store) Upsert(input MutationInput) (cmemory.MemoryMutation, error) {
 	ref := s.recall.Add(input.Key, input.Value)
 	input.RecallIndexRef = ref

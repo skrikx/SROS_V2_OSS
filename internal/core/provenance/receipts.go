@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"time"
 
 	"srosv2/contracts/evidence"
 	"srosv2/internal/shared/ids"
@@ -18,7 +17,7 @@ func (s *Service) EmitReceipt(runID ids.RunID, kind evidence.ReceiptKind, status
 	}
 	receipt := evidence.Receipt{
 		ContractVersion:  "v2.0",
-		ReceiptID:        ids.ReceiptID("rcpt_" + digestBytes([]byte(string(runID)+summary))[:12]),
+		ReceiptID:        ids.ReceiptID("rcpt_" + digestBytes([]byte(string(runID) + summary))[:12]),
 		RunID:            runID,
 		Kind:             kind,
 		EvidenceBundleID: bundle.BundleID,

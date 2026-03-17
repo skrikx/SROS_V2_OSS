@@ -38,6 +38,9 @@ func (w *Writer) EndSpan(span ctrace.Span) error {
 }
 
 func (w *Writer) Event(runID ids.RunID, traceID ids.TraceID, spanID ids.SpanID, parent ids.SpanID, kind ctrace.EventType, payload map[string]any) (ctrace.TraceEvent, error) {
+	if spanID == "" {
+		spanID = ids.SpanID("span_" + shortHash(fmt.Sprintf("%s|%s|span", runID, kind)))
+	}
 	event := ctrace.TraceEvent{
 		ContractVersion: "v2.0",
 		EventID:         ids.EventID("evt_" + shortHash(fmt.Sprintf("%s|%s|%d", runID, kind, w.now().UnixNano()))),

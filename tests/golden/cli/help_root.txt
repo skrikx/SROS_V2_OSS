@@ -16,8 +16,8 @@ Commands:
   pause        Pause a runtime session
   checkpoint   Create a runtime checkpoint record
   rollback     Rollback a runtime session to a checkpoint
-  trace        Inspect trace boundary (trace plane deferred)
-  receipts     Inspect receipt boundary (evidence plane deferred)
+  trace        Trace evidence surfaces
+  receipts     Receipt and closure proof surfaces
   memory       Memory continuity surfaces
   mirror       Mirror witness and drift surfaces
   inspect      Inspect local wiring and repository surfaces

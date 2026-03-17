@@ -16,6 +16,7 @@ func TestReceiptValidateValid(t *testing.T) {
 		RunID:            ids.RunID("run_001"),
 		Kind:             evidence.ReceiptKindTerminal,
 		EvidenceBundleID: ids.EvidenceBundleID("bundle_001"),
+		Status:           "sealed",
 		Summary:          "run complete",
 		CreatedAt:        time.Date(2026, 3, 17, 9, 0, 0, 0, time.UTC),
 	}

@@ -1,0 +1,10 @@
+{
+  "run_id": "run_001",
+  "trace_id": "trace_001",
+  "events": [
+    {
+      "event_id": "evt_1",
+      "event_type": "run.started"
+    }
+  ]
+}
