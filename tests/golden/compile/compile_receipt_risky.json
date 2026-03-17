@@ -1,0 +1,34 @@
+{
+  "receipt": {
+    "contract_version": "v2.0",
+    "receipt_id": "receipt_4c5c870c1d84",
+    "run_id": "run_6b00d42ed345",
+    "kind": "stage",
+    "evidence_bundle_id": "bundle_0beed9cbe56e",
+    "summary": "compile completed; runtime admission not performed",
+    "closure_proof_ref": "sr8-compile-only",
+    "created_at": "2026-03-17T09:18:16.603881Z"
+  },
+  "bundle": {
+    "bundle_id": "bundle_0beed9cbe56e",
+    "run_id": "run_6b00d42ed345",
+    "artifact_refs": [
+      {
+        "artifact_id": "artifact_0c1a10782a13",
+        "path": "C:\\Users\\hassm\\OneDrive\\Desktop\\SROS_v3_Snapshots\\SROS_V2_OSS\\artifacts\\compile\\run_6b00d42ed345\\run_contract.json",
+        "digest_algo": "sha256",
+        "digest": "b3123276b1f706eaf48d70891448839e9ecf2ebd842bb70eb7f07a9e97310827",
+        "media_type": "application/json",
+        "bytes": 1180
+      }
+    ],
+    "notes": "compile plane evidence only; trace linkage provisional"
+  },
+  "compile_request_id": "cmp_a4a153cc8c12",
+  "domain_class": "general_ops",
+  "risk_class": "high",
+  "topology_class": "local_single",
+  "status": "compiled",
+  "trace_linkage": "provisional: trace append deferred to W08",
+  "runtime_admission": "not_admitted"
+}

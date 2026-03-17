@@ -1,0 +1,42 @@
+{
+  "receipt": {
+    "contract_version": "v2.0",
+    "receipt_id": "receipt_19bbf730275f",
+    "run_id": "run_c3cf33c9cfe0",
+    "kind": "stage",
+    "evidence_bundle_id": "bundle_c32071cab2be",
+    "summary": "compile completed; runtime admission not performed",
+    "closure_proof_ref": "sr8-compile-only",
+    "created_at": "2026-03-17T09:18:16.0555326Z"
+  },
+  "bundle": {
+    "bundle_id": "bundle_c32071cab2be",
+    "run_id": "run_c3cf33c9cfe0",
+    "artifact_refs": [
+      {
+        "artifact_id": "artifact_7489b3bd684b",
+        "path": "C:\\Users\\hassm\\OneDrive\\Desktop\\SROS_v3_Snapshots\\SROS_V2_OSS\\artifacts\\compile\\run_c3cf33c9cfe0\\run_contract.json",
+        "digest_algo": "sha256",
+        "digest": "9fcc0590770675fb3019e3bf12766c6337b1f1369f19f6b9698aed01efd7dbf2",
+        "media_type": "application/json",
+        "bytes": 1468
+      },
+      {
+        "artifact_id": "artifact_b0b1520bf704",
+        "path": "C:\\Users\\hassm\\OneDrive\\Desktop\\SROS_v3_Snapshots\\SROS_V2_OSS\\artifacts\\compile\\run_c3cf33c9cfe0\\run_contract.srxml",
+        "digest_algo": "sha256",
+        "digest": "c0a216e152c04d8a869487f1c8ee561fb32e3a8cf3b85a51daeaac412f01b4de",
+        "media_type": "application/xml",
+        "bytes": 684
+      }
+    ],
+    "notes": "compile plane evidence only; trace linkage provisional"
+  },
+  "compile_request_id": "cmp_08d673a1809c",
+  "domain_class": "general_ops",
+  "risk_class": "low",
+  "topology_class": "local_single",
+  "status": "compiled",
+  "trace_linkage": "provisional: trace append deferred to W08",
+  "runtime_admission": "not_admitted"
+}

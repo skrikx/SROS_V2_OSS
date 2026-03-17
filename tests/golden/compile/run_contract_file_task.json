@@ -1,0 +1,37 @@
+{
+  "contract_version": "v2.0",
+  "run_id": "run_ef36e092501b",
+  "trace_id": "trace_1379be34efba",
+  "operator_id": "operator_local",
+  "tenant_id": "local",
+  "workspace_id": "default",
+  "intent_summary": "Patch the CLI command output formatting in cmd/sros and update related tests.",
+  "normalized_request": "Patch the CLI command output formatting in cmd/sros and update related tests.",
+  "risk_class": "low",
+  "route_class": "local_run",
+  "artifact_refs": [
+    {
+      "artifact_id": "artifact_run_contract",
+      "kind": "run_contract",
+      "uri": "C:\\Users\\hassm\\OneDrive\\Desktop\\SROS_v3_Snapshots\\SROS_V2_OSS\\artifacts\\compile\\run_ef36e092501b\\run_contract.json"
+    },
+    {
+      "artifact_id": "artifact_compile_receipt",
+      "kind": "compile_receipt",
+      "uri": "C:\\Users\\hassm\\OneDrive\\Desktop\\SROS_v3_Snapshots\\SROS_V2_OSS\\artifacts\\compile\\run_ef36e092501b\\compile_receipt.json"
+    }
+  ],
+  "requested_receipts": [
+    {
+      "mode": "summary",
+      "kind": "compile"
+    }
+  ],
+  "metadata": {
+    "artifact_posture": "file_delta",
+    "compile_request_id": "cmp_e5bc90b56ae9",
+    "domain_class": "file_patch",
+    "topology_class": "local_filesystem"
+  },
+  "created_at": "2026-03-17T09:18:16.3380608Z"
+}

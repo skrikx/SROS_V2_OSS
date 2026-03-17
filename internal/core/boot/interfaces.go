@@ -1,6 +1,11 @@
 package boot
 
-import "srosv2/internal/core/runtime"
+import (
+	"context"
+
+	"srosv2/internal/core/runtime"
+	"srosv2/internal/core/sr8"
+)
 
 type BundleBuilder interface {
 	Build() (Bundle, error)
@@ -13,8 +18,12 @@ type ServiceBoundary struct {
 	Summary    string `json:"summary"`
 }
 
+type Compiler interface {
+	Compile(context.Context, sr8.CompileRequest) (sr8.CompileResult, error)
+}
+
 type ServiceSet struct {
-	Compiler  runtime.Compiler
+	Compiler  Compiler
 	Runtime   runtime.Runtime
 	Inspector runtime.Inspector
 	Fabric    runtime.Fabric

@@ -1,0 +1,1 @@
+Summarize current repository status and propose next compile-safe step.

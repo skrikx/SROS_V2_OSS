@@ -4,7 +4,7 @@ import "srosv2/internal/core/runtime"
 
 type Bundle struct {
 	Mode       Mode              `json:"mode"`
-	Compiler   runtime.Compiler  `json:"-"`
+	Compiler   Compiler          `json:"-"`
 	Runtime    runtime.Runtime   `json:"-"`
 	Inspector  runtime.Inspector `json:"-"`
 	Fabric     runtime.Fabric    `json:"-"`

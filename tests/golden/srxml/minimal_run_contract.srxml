@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<srxml version="sros.v2">
+  <run_contract contract_version="v2.0">
+    <run_id>run_c3cf33c9cfe0</run_id>
+    <trace_id>trace_44fd767e70f6</trace_id>
+    <operator_id>operator_local</operator_id>
+    <tenant_id>local</tenant_id>
+    <workspace_id>default</workspace_id>
+    <intent_summary>Summarize current repository status and propose next compile-safe step.</intent_summary>
+    <normalized_request>Summarize current repository status and propose next compile-safe step.</normalized_request>
+    <risk_class>low</risk_class>
+    <route_class>local_cli</route_class>
+    <created_at>2026-03-17T09:18:16Z</created_at>
+  </run_contract>
+</srxml>

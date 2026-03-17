@@ -1,0 +1,9 @@
+{
+  "source": "file",
+  "normalized_text": "Summarize current repository status and propose next compile-safe step.",
+  "intent_summary": "Summarize current repository status and propose next compile-safe step.",
+  "operator_id": "operator_local",
+  "tenant_id": "local",
+  "workspace_id": "default",
+  "compile_request_id": "cmp_08d673a1809c"
+}

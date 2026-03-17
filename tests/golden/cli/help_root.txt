@@ -9,7 +9,7 @@ Commands:
   doctor       Run local environment and repo integrity checks
   seed         Create a local seed artifact for smoke workflows
   config       Show resolved config and source
-  compile      Parse inputs and dispatch compile boundary (SR8 deferred)
+  compile      Compile intent through SR8 into canonical run contract
   run          Dispatch run boundary (SR9 deferred)
   plan         Dispatch plan boundary (runtime planner deferred)
   resume       Dispatch resume boundary (runtime deferred)
