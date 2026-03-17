@@ -1,0 +1,13 @@
+{
+  "contract_version": "v2.0",
+  "decision_id": "pd_runtime_session_prepare_1742212800000000000",
+  "run_id": "run_001",
+  "trace_id": "trace_001",
+  "capability": "runtime.session.prepare",
+  "verdict": "allow",
+  "boundary": "local_process",
+  "sandbox_profile": "local-default",
+  "bundle_ref": "pb_001",
+  "reason": "policy default allow",
+  "decided_at": "2026-03-17T12:00:00Z"
+}

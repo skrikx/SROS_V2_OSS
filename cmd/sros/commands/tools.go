@@ -57,26 +57,26 @@ func newToolsCommand() *Command {
 		},
 		{
 			Name:    "validate",
-			Summary: "Validate a tool manifest file",
-			Usage:   "sros tools validate --manifest <path>",
+			Summary: "Validate a policy bundle for governed tool semantics",
+			Usage:   "sros tools validate --policy <path>",
 			Run: func(ctx *Context, args []string) error {
 				fs := flag.NewFlagSet("tools validate", flag.ContinueOnError)
 				fs.SetOutput(ioDiscard{})
-				manifest := fs.String("manifest", "", "manifest path")
+				policyPath := fs.String("policy", "", "policy bundle path")
 				if err := fs.Parse(args); err != nil {
 					return OperatorError(err.Error())
 				}
-				if *manifest == "" {
-					return OperatorError("tools validate requires --manifest")
+				if *policyPath == "" {
+					return OperatorError("tools validate requires --policy")
 				}
 				if ctx.Bundle.Fabric == nil {
-					return DeferredError("tools validate boundary is not wired yet (deferred to W09)")
+					return DeferredError("tools validate boundary is not wired")
 				}
-				data, err := ctx.Bundle.Fabric.ToolsValidate(context.Background(), *manifest)
+				data, err := ctx.Bundle.Fabric.ToolsValidate(context.Background(), *policyPath)
 				if err != nil {
 					return EnvironmentError(err.Error())
 				}
-				return writeOutput(ctx, "tool manifest validated", data)
+				return writeOutput(ctx, "tool policy validated", data)
 			},
 		},
 		{

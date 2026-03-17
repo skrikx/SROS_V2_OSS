@@ -1,0 +1,16 @@
+{
+  "bundle_id": "pb_high_risk_patch",
+  "name": "High Risk Patch Policy",
+  "version": "2026-03-17",
+  "ruleset_digest": "sha256:high-risk-patch",
+  "default_verdict": "allow",
+  "default_sandbox_profile": "patch-safe",
+  "sandboxes": {
+    "patch-safe": {
+      "name": "patch-safe",
+      "allow_patch": true,
+      "description": "patch-capable sandbox"
+    }
+  },
+  "capabilities": []
+}

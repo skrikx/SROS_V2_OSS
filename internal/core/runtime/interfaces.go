@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"srosv2/contracts/runcontract"
+	"srosv2/internal/core/orch"
 )
 
 type RunRequest struct {
@@ -39,6 +40,8 @@ type RuntimeResponse struct {
 	RollbackID    string     `json:"rollback_id,omitempty"`
 	ApprovalPath  string     `json:"approval_path,omitempty"`
 	RuntimeRecord string     `json:"runtime_record,omitempty"`
+	Decision      string     `json:"decision,omitempty"`
+	Plan          *orch.Plan `json:"plan,omitempty"`
 }
 
 type StatusRequest struct {

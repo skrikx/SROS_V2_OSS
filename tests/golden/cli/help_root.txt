@@ -23,8 +23,8 @@ Commands:
   inspect      Inspect local wiring and repository surfaces
   status       Show runtime status and boundary wiring
   tools        Tool capability surfaces (fabric deferred)
-  connectors   Connector capability surfaces (fabric deferred)
-  mcp          MCP ingress capability surface (fabric deferred)
+  connectors   Governed connector capability surfaces
+  mcp          Governed MCP capability surface
 
 Global Flags:
   --config <path>      Use explicit config file

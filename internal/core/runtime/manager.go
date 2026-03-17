@@ -5,24 +5,31 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"path/filepath"
 	"strings"
 	"time"
 
 	"srosv2/contracts/runcontract"
+	"srosv2/internal/core/gov"
+	"srosv2/internal/core/orch"
 )
 
 type Options struct {
-	StoreDir string
-	Mode     string
-	Gate     AdmissionGate
-	Now      func() time.Time
+	StoreDir     string
+	Mode         string
+	Gate         AdmissionGate
+	Now          func() time.Time
+	Orchestrator *orch.Orchestrator
+	Governor     *gov.Engine
 }
 
 type Manager struct {
-	store *Store
-	mode  string
-	gate  AdmissionGate
-	now   func() time.Time
+	store        *Store
+	mode         string
+	gate         AdmissionGate
+	now          func() time.Time
+	orchestrator *orch.Orchestrator
+	governor     *gov.Engine
 }
 
 func NewManager(opts Options) (*Manager, error) {
@@ -41,7 +48,14 @@ func NewManager(opts Options) (*Manager, error) {
 		mode = "local_cli"
 	}
 
-	return &Manager{store: store, mode: mode, gate: opts.Gate, now: now}, nil
+	return &Manager{
+		store:        store,
+		mode:         mode,
+		gate:         opts.Gate,
+		now:          now,
+		orchestrator: opts.Orchestrator,
+		governor:     opts.Governor,
+	}, nil
 }
 
 func (m *Manager) Run(ctx context.Context, req RunRequest) (RuntimeResponse, error) {
@@ -65,6 +79,78 @@ func (m *Manager) Run(ctx context.Context, req RunRequest) (RuntimeResponse, err
 
 	now := m.now().UTC()
 	session := NewSession(contract, contractPath, now)
+	session.TopologyBinding = decision.TopologyBinding
+
+	var plan *orch.Plan
+	if m.orchestrator != nil {
+		hydrated, err := m.orchestrator.Hydrate(session.SessionID, contract, decision.TopologyBinding)
+		if err != nil {
+			return RuntimeResponse{}, err
+		}
+		plan = &hydrated
+		session.PlanPath = filepath.Join(m.store.Root(), "orch", session.SessionID+"_plan.json")
+	}
+
+	if plan != nil && m.governor != nil {
+		executed, err := m.orchestrator.Execute(ctx, *plan, func(ctx context.Context, unit orch.WorkUnit) (orch.Decision, error) {
+			result, err := m.governor.Evaluate(ctx, gov.Request{
+				RunID:      contract.RunID,
+				TraceID:    contract.TraceID,
+				RiskClass:  contract.RiskClass,
+				Capability: unit.Capability,
+			})
+			if err != nil {
+				return orch.Decision{}, err
+			}
+			return orch.Decision{
+				Verdict:        string(result.Decision.Verdict),
+				Reason:         result.Decision.Reason,
+				SandboxProfile: result.Decision.SandboxProfile,
+			}, nil
+		})
+		if err != nil {
+			return RuntimeResponse{}, err
+		}
+		session.LastDecision = executed.Decision.Verdict
+		switch executed.Decision.Verdict {
+		case "ask":
+			session.ApprovalPath = executed.Route.ApprovalPath
+			if err := Transition(&session, SessionStateWaitingForInput, executed.Decision.Reason, now); err != nil {
+				return RuntimeResponse{}, err
+			}
+			if err := m.store.SaveApproval(ApprovalCheckpoint{
+				SessionID:   session.SessionID,
+				Reason:      executed.Decision.Reason,
+				Approved:    false,
+				RequestedAt: now.Format(time.RFC3339),
+			}); err != nil {
+				return RuntimeResponse{}, err
+			}
+		case "deny":
+			if err := Transition(&session, SessionStateFailedSafe, executed.Decision.Reason, now); err != nil {
+				return RuntimeResponse{}, err
+			}
+		}
+	}
+
+	if session.State == SessionStateWaitingForInput || session.State == SessionStateFailedSafe {
+		if err := m.store.SaveSession(session); err != nil {
+			return RuntimeResponse{}, err
+		}
+		summary := "runtime session governed"
+		if session.State == SessionStateWaitingForInput {
+			summary = "runtime waiting for operator input"
+		}
+		return RuntimeResponse{
+			Accepted:      true,
+			Summary:       summary,
+			Session:       RefFromSession(session),
+			ApprovalPath:  session.ApprovalPath,
+			RuntimeRecord: m.store.Root(),
+			Decision:      session.LastDecision,
+			Plan:          plan,
+		}, nil
+	}
 
 	switch decision.InitialState {
 	case SessionStateApproved:
@@ -113,6 +199,8 @@ func (m *Manager) Run(ctx context.Context, req RunRequest) (RuntimeResponse, err
 		Session:       RefFromSession(session),
 		ApprovalPath:  session.ApprovalPath,
 		RuntimeRecord: m.store.Root(),
+		Decision:      session.LastDecision,
+		Plan:          plan,
 	}, nil
 }
 
@@ -281,6 +369,8 @@ func snapshotFromSession(mode string, session RuntimeSession) StatusSnapshot {
 		LatestCheckpointID: session.LatestCheckpointID,
 		LatestRollbackID:   session.LatestRollbackID,
 		WaitingApproval:    session.ApprovalPath,
+		PlanPath:           session.PlanPath,
+		LastDecision:       session.LastDecision,
 	}
 }
 
@@ -314,6 +404,91 @@ func (m *Manager) resolveApproval(session RuntimeSession, approvalFile string) (
 		return false, nil
 	}
 	return approval.Approved, nil
+}
+
+func (m *Manager) ToolsList(context.Context) (map[string]any, error) {
+	bundle := gov.DefaultBundle()
+	if m.governor != nil {
+		bundle = m.governor.Bundle()
+	}
+	capabilities := make([]map[string]any, 0, len(bundle.Capabilities))
+	for _, item := range bundle.Capabilities {
+		capabilities = append(capabilities, map[string]any{
+			"name":            item.Name,
+			"verdict":         item.Verdict,
+			"sandbox_profile": item.SandboxProfile,
+			"deferred_to":     "W09",
+		})
+	}
+	return map[string]any{
+		"bundle_id":      bundle.BundleID,
+		"capabilities":   capabilities,
+		"execution_mode": "governed_semantics_only",
+	}, nil
+}
+
+func (m *Manager) ToolsShow(_ context.Context, name string) (map[string]any, error) {
+	bundle := gov.DefaultBundle()
+	if m.governor != nil {
+		bundle = m.governor.Bundle()
+	}
+	for _, item := range bundle.Capabilities {
+		if item.Name == strings.TrimSpace(name) {
+			return map[string]any{
+				"name":               item.Name,
+				"verdict":            item.Verdict,
+				"sandbox_profile":    item.SandboxProfile,
+				"allowed_boundaries": item.AllowedBoundaries,
+				"deferred_to":        "W09",
+			}, nil
+		}
+	}
+	return nil, fmt.Errorf("tool capability %q not found", name)
+}
+
+func (m *Manager) ToolsValidate(_ context.Context, path string) (map[string]any, error) {
+	bundle, err := gov.LoadBundle(strings.TrimSpace(path))
+	if err != nil {
+		return nil, err
+	}
+	return map[string]any{
+		"valid":        true,
+		"bundle_id":    bundle.BundleID,
+		"name":         bundle.Name,
+		"version":      bundle.Version,
+		"capabilities": len(bundle.Capabilities),
+		"sandboxes":    len(bundle.Sandboxes),
+	}, nil
+}
+
+func (m *Manager) ToolsRegister(_ context.Context, path string) (map[string]any, error) {
+	bundle, err := gov.LoadBundle(strings.TrimSpace(path))
+	if err != nil {
+		return nil, err
+	}
+	return map[string]any{
+		"registered": false,
+		"bundle_id":  bundle.BundleID,
+		"summary":    "registration remains deferred to W09; bundle validated through GOV",
+	}, nil
+}
+
+func (m *Manager) ConnectorsList(context.Context) (map[string]any, error) {
+	return map[string]any{
+		"connectors": []map[string]any{
+			{"name": "local-governed-connector", "verdict": "ask", "deferred_to": "W09"},
+		},
+		"execution_mode": "governed_semantics_only",
+	}, nil
+}
+
+func (m *Manager) MCPIngest(_ context.Context, path string) (map[string]any, error) {
+	return map[string]any{
+		"accepted":       false,
+		"file":           strings.TrimSpace(path),
+		"summary":        "MCP transport remains deferred to W09; GOV can govern the capability boundary only",
+		"execution_mode": "governed_semantics_only",
+	}, nil
 }
 
 func loadRunContract(path string) (runcontract.RunContract, error) {

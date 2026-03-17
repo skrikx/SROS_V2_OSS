@@ -1,0 +1,13 @@
+{
+  "contract_version": "v2.0",
+  "decision_id": "pd_connector_invoke_1742212800000000000",
+  "run_id": "run_001",
+  "trace_id": "trace_001",
+  "capability": "connector.invoke",
+  "verdict": "ask",
+  "boundary": "external_net",
+  "sandbox_profile": "net-observe",
+  "bundle_ref": "pb_ask",
+  "reason": "operator checkpoint required - capability policy matched",
+  "decided_at": "2026-03-17T12:00:00Z"
+}

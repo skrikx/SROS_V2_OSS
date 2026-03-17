@@ -1,0 +1,5 @@
+{
+  "name": "patch-safe",
+  "allow_patch": true,
+  "description": "patch allowed in local filesystem sandbox"
+}

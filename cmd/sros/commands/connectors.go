@@ -5,7 +5,7 @@ import "context"
 func newConnectorsCommand() *Command {
 	cmd := &Command{
 		Name:    "connectors",
-		Summary: "Connector capability surfaces (fabric deferred)",
+		Summary: "Governed connector capability surfaces",
 		Usage:   "sros connectors list",
 	}
 	cmd.Subcommands = []*Command{
@@ -18,13 +18,13 @@ func newConnectorsCommand() *Command {
 					return err
 				}
 				if ctx.Bundle.Fabric == nil {
-					return DeferredError("connectors list boundary is not wired yet (deferred to W09)")
+					return DeferredError("connectors list boundary is not wired")
 				}
 				data, err := ctx.Bundle.Fabric.ConnectorsList(context.Background())
 				if err != nil {
 					return EnvironmentError(err.Error())
 				}
-				return writeOutput(ctx, "connectors listed", data)
+				return writeOutput(ctx, "connectors governed", data)
 			},
 		},
 	}

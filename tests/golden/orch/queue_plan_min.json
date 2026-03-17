@@ -1,0 +1,23 @@
+{
+  "session_id": "sess_001",
+  "run_id": "run_001",
+  "risk_class": "medium",
+  "concurrency": {
+    "max_parallel": 2,
+    "allow_spawn": true
+  },
+  "work_units": [
+    {
+      "id": "wu-001",
+      "name": "hydrate-runtime-session",
+      "capability": "runtime.session.prepare",
+      "privileged": false,
+      "checkpoint": false,
+      "description": "hydrate runtime session into an executable orchestration plan"
+    }
+  ],
+  "artifacts": [
+    "queue_plan.json",
+    "governance_decisions.json"
+  ]
+}

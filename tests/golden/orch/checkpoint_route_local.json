@@ -1,0 +1,10 @@
+{
+  "session_id": "sess_001",
+  "work_unit_id": "wu-001",
+  "route": "local_cli_checkpoint",
+  "approval_path": "artifacts/runtime/approvals/sess_001.json",
+  "requested_at": "2026-03-17T12:00:00Z",
+  "reason": "operator checkpoint required",
+  "capability": "connector.invoke",
+  "sandbox_profile": "net-observe"
+}

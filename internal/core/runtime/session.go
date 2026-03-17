@@ -28,6 +28,9 @@ type RuntimeSession struct {
 	ApprovalPath       string                  `json:"approval_path,omitempty"`
 	LatestCheckpointID string                  `json:"latest_checkpoint_id,omitempty"`
 	LatestRollbackID   string                  `json:"latest_rollback_id,omitempty"`
+	PlanPath           string                  `json:"plan_path,omitempty"`
+	LastDecision       string                  `json:"last_decision,omitempty"`
+	TopologyBinding    string                  `json:"topology_binding,omitempty"`
 }
 
 func NewSession(contract runcontract.RunContract, contractPath string, now time.Time) RuntimeSession {

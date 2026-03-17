@@ -19,6 +19,7 @@ type PolicyDecision struct {
 	DecisionID           ids.PolicyDecisionID `json:"decision_id"`
 	RunID                ids.RunID            `json:"run_id"`
 	TraceID              ids.TraceID          `json:"trace_id"`
+	Capability           string               `json:"capability,omitempty"`
 	Verdict              Verdict              `json:"verdict"`
 	Boundary             TrustBoundary        `json:"boundary"`
 	SandboxProfile       string               `json:"sandbox_profile"`
@@ -26,5 +27,6 @@ type PolicyDecision struct {
 	BundleRef            ids.PolicyBundleID   `json:"bundle_ref"`
 	Reason               string               `json:"reason"`
 	EvidenceRefs         []ids.ArtifactID     `json:"evidence_refs,omitempty"`
+	BreakGlass           bool                 `json:"break_glass,omitempty"`
 	DecidedAt            time.Time            `json:"decided_at"`
 }

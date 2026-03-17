@@ -6,7 +6,7 @@ Usage:
 Commands:
   list         List known tool manifests
   show         Show a single tool manifest
-  validate     Validate a tool manifest file
+  validate     Validate a policy bundle for governed tool semantics
   register     Register a tool manifest
 
 Run 'sros help <command>' for more details.

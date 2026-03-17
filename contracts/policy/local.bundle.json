@@ -1,0 +1,39 @@
+{
+  "bundle_id": "pb_local_default",
+  "name": "Local Default Policy",
+  "version": "2026-03-17",
+  "ruleset_digest": "sha256:local-default",
+  "default_verdict": "allow",
+  "default_sandbox_profile": "local-default",
+  "break_glass_allowed": true,
+  "sandboxes": {
+    "local-default": {
+      "name": "local-default",
+      "description": "safe local default sandbox"
+    },
+    "net-observe": {
+      "name": "net-observe",
+      "allow_external_net": true,
+      "description": "governed external boundary without execution"
+    }
+  },
+  "capabilities": [
+    {
+      "name": "tool.validate",
+      "verdict": "allow",
+      "sandbox_profile": "local-default",
+      "allowed_boundaries": [
+        "local_process"
+      ]
+    },
+    {
+      "name": "connector.invoke",
+      "verdict": "ask",
+      "sandbox_profile": "net-observe",
+      "allowed_boundaries": [
+        "external_net"
+      ],
+      "require_approval": true
+    }
+  ]
+}

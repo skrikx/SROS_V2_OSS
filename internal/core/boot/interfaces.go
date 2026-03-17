@@ -3,6 +3,8 @@ package boot
 import (
 	"context"
 
+	"srosv2/internal/core/gov"
+	"srosv2/internal/core/orch"
 	"srosv2/internal/core/runtime"
 	"srosv2/internal/core/sr8"
 )
@@ -23,8 +25,10 @@ type Compiler interface {
 }
 
 type ServiceSet struct {
-	Compiler  Compiler
-	Runtime   runtime.Runtime
-	Inspector runtime.Inspector
-	Fabric    runtime.Fabric
+	Compiler     Compiler
+	Runtime      runtime.Runtime
+	Inspector    runtime.Inspector
+	Fabric       runtime.Fabric
+	Orchestrator *orch.Orchestrator
+	Governor     *gov.Engine
 }

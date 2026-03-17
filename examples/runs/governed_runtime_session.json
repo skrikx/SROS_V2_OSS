@@ -1,0 +1,23 @@
+{
+  "contract_version": "v2.0",
+  "run_id": "run_governed_001",
+  "trace_id": "trace_governed_001",
+  "operator_id": "op_local",
+  "tenant_id": "local",
+  "workspace_id": "default",
+  "intent_summary": "Governed runtime session",
+  "normalized_request": "Governed runtime session",
+  "risk_class": "high",
+  "route_class": "local_cli",
+  "checkpoint_refs": [
+    {
+      "checkpoint_id": "cp_local_approval",
+      "stage": "validated",
+      "reason": "operator review point"
+    }
+  ],
+  "metadata": {
+    "requires_tool_validation": "true"
+  },
+  "created_at": "2026-03-17T12:00:00Z"
+}

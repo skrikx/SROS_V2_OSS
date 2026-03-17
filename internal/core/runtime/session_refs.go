@@ -31,4 +31,6 @@ type StatusSnapshot struct {
 	LatestCheckpointID string      `json:"latest_checkpoint_id,omitempty"`
 	LatestRollbackID   string      `json:"latest_rollback_id,omitempty"`
 	WaitingApproval    string      `json:"waiting_approval,omitempty"`
+	PlanPath           string      `json:"plan_path,omitempty"`
+	LastDecision       string      `json:"last_decision,omitempty"`
 }
