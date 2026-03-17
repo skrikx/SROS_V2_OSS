@@ -1,0 +1,12 @@
+{
+  "contract_version": "v2.0",
+  "decision_id": "pd_001",
+  "run_id": "run_001",
+  "trace_id": "trace_001",
+  "verdict": "allow",
+  "boundary": "local_process",
+  "sandbox_profile": "local-default",
+  "bundle_ref": "pb_001",
+  "reason": "local operation allowed",
+  "decided_at": "2026-03-17T09:00:00Z"
+}

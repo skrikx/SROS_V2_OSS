@@ -1,0 +1,7 @@
+mode: local_cli
+workspace_root: .
+artifact_root: ./artifacts
+policy_bundle_path: ./contracts/policy/local.bundle.json
+memory_store_path: ./artifacts/memory
+trace_store_path: ./artifacts/trace
+output_format: text

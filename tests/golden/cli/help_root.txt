@@ -1,0 +1,37 @@
+sros - SROS V2 local-only operator CLI
+
+Usage:
+  sros <command> [flags]
+
+Commands:
+  init         Initialize local config for SROS v2
+  bootstrap    Show bootstrap mode and service boundaries
+  doctor       Run local environment and repo integrity checks
+  seed         Create a local seed artifact for smoke workflows
+  config       Show resolved config and source
+  compile      Parse inputs and dispatch compile boundary (SR8 deferred)
+  run          Dispatch run boundary (SR9 deferred)
+  plan         Dispatch plan boundary (runtime planner deferred)
+  resume       Dispatch resume boundary (runtime deferred)
+  pause        Dispatch pause boundary (runtime deferred)
+  checkpoint   Dispatch checkpoint boundary (runtime deferred)
+  rollback     Dispatch rollback boundary (runtime deferred)
+  trace        Inspect trace boundary (trace plane deferred)
+  receipts     Inspect receipt boundary (evidence plane deferred)
+  memory       Inspect memory boundary (memory plane deferred)
+  mirror       Inspect mirror boundary (mirror plane deferred)
+  inspect      Inspect local wiring and repository surfaces
+  status       Show CLI mode, config source, and boundary wiring
+  tools        Tool capability surfaces (fabric deferred)
+  connectors   Connector capability surfaces (fabric deferred)
+  mcp          MCP ingress capability surface (fabric deferred)
+
+Global Flags:
+  --config <path>      Use explicit config file
+  --format <text|json> Set output format
+  --workspace <path>   Override workspace root
+  -h, --help           Show help
+
+Run 'sros help <command>' for more details.
+
+

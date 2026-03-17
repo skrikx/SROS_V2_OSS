@@ -1,0 +1,8 @@
+sros run - Dispatch run boundary (SR9 deferred)
+
+Usage:
+  sros run [--run-id <id>] [--plan <path>]
+
+Run 'sros help <command>' for more details.
+
+

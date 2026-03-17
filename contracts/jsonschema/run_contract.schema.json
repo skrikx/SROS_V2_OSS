@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "sros.v2.run_contract",
+  "title": "Run Contract",
+  "type": "object",
+  "required": [
+    "contract_version",
+    "run_id",
+    "trace_id",
+    "operator_id",
+    "tenant_id",
+    "workspace_id",
+    "intent_summary",
+    "normalized_request",
+    "risk_class",
+    "route_class",
+    "created_at"
+  ],
+  "properties": {
+    "contract_version": { "type": "string" },
+    "run_id": { "type": "string" },
+    "trace_id": { "type": "string" },
+    "operator_id": { "type": "string" },
+    "tenant_id": { "type": "string" },
+    "workspace_id": { "type": "string" },
+    "intent_summary": { "type": "string" },
+    "normalized_request": { "type": "string" },
+    "risk_class": { "type": "string", "enum": ["low", "medium", "high", "critical"] },
+    "route_class": { "type": "string", "enum": ["local_cli", "local_run"] },
+    "created_at": { "type": "string", "format": "date-time" }
+  },
+  "additionalProperties": true
+}

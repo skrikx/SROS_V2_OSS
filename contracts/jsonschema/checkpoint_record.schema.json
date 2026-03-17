@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "sros.v2.checkpoint_record",
+  "title": "Checkpoint Record",
+  "type": "object",
+  "required": [
+    "contract_version",
+    "checkpoint_id",
+    "run_id",
+    "stage",
+    "recorded_at"
+  ],
+  "properties": {
+    "contract_version": { "type": "string" },
+    "checkpoint_id": { "type": "string" },
+    "run_id": { "type": "string" },
+    "stage": { "type": "string", "enum": ["draft", "validated", "promoted", "rolled_back"] },
+    "recorded_at": { "type": "string", "format": "date-time" }
+  },
+  "additionalProperties": true
+}

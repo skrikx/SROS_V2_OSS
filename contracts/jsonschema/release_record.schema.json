@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "sros.v2.release_record",
+  "title": "Release Record",
+  "type": "object",
+  "required": [
+    "contract_version",
+    "release_id",
+    "checkpoint_id",
+    "target_stage",
+    "created_at"
+  ],
+  "properties": {
+    "contract_version": { "type": "string" },
+    "release_id": { "type": "string" },
+    "checkpoint_id": { "type": "string" },
+    "target_stage": { "type": "string", "enum": ["draft", "validated", "promoted", "rolled_back"] },
+    "created_at": { "type": "string", "format": "date-time" }
+  },
+  "additionalProperties": true
+}

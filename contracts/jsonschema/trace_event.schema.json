@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "sros.v2.trace_event",
+  "title": "Trace Event",
+  "type": "object",
+  "required": [
+    "contract_version",
+    "event_id",
+    "trace_id",
+    "span_id",
+    "run_id",
+    "event_type",
+    "occurred_at"
+  ],
+  "properties": {
+    "contract_version": { "type": "string" },
+    "event_id": { "type": "string" },
+    "trace_id": { "type": "string" },
+    "span_id": { "type": "string" },
+    "run_id": { "type": "string" },
+    "event_type": {
+      "type": "string",
+      "enum": ["run.started", "run.completed", "policy.decision", "memory.mutation", "receipt.linked"]
+    },
+    "occurred_at": { "type": "string", "format": "date-time" }
+  },
+  "additionalProperties": true
+}

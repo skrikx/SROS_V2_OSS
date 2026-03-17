@@ -1,0 +1,14 @@
+{
+  "contract_version": "v2.0",
+  "mutation_id": "mm_001",
+  "run_id": "run_001",
+  "session_id": "session_001",
+  "scope": "session",
+  "kind": "upsert",
+  "branch": {
+    "branch_id": "branch_main"
+  },
+  "key": "intent.summary",
+  "value": "Compile and validate scaffold contracts",
+  "occurred_at": "2026-03-17T09:00:00Z"
+}

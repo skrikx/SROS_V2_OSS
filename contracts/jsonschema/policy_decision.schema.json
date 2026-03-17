@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "sros.v2.policy_decision",
+  "title": "Policy Decision",
+  "type": "object",
+  "required": [
+    "contract_version",
+    "decision_id",
+    "run_id",
+    "trace_id",
+    "verdict",
+    "boundary",
+    "sandbox_profile",
+    "bundle_ref",
+    "reason",
+    "decided_at"
+  ],
+  "properties": {
+    "contract_version": { "type": "string" },
+    "decision_id": { "type": "string" },
+    "run_id": { "type": "string" },
+    "trace_id": { "type": "string" },
+    "verdict": { "type": "string", "enum": ["allow", "ask", "deny"] },
+    "boundary": { "type": "string", "enum": ["local_process", "local_fs", "external_net"] },
+    "sandbox_profile": { "type": "string" },
+    "bundle_ref": { "type": "string" },
+    "reason": { "type": "string" },
+    "decided_at": { "type": "string", "format": "date-time" }
+  },
+  "additionalProperties": true
+}

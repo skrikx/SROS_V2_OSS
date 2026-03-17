@@ -1,0 +1,25 @@
+# Build outputs
+bin/
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Test/cache
+*.test
+*.out
+coverage.out
+
+# IDE/OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Local environment
+.env
+
+# Generated artifacts (keep scaffold marker)
+artifacts/*
+!artifacts/.keep

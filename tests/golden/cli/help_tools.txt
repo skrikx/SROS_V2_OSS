@@ -1,0 +1,14 @@
+sros tools - Tool capability surfaces (fabric deferred)
+
+Usage:
+  sros tools <list|show|validate|register>
+
+Commands:
+  list         List known tool manifests
+  show         Show a single tool manifest
+  validate     Validate a tool manifest file
+  register     Register a tool manifest
+
+Run 'sros help <command>' for more details.
+
+

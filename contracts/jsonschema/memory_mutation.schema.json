@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "sros.v2.memory_mutation",
+  "title": "Memory Mutation",
+  "type": "object",
+  "required": [
+    "contract_version",
+    "mutation_id",
+    "run_id",
+    "session_id",
+    "scope",
+    "kind",
+    "branch",
+    "key",
+    "occurred_at"
+  ],
+  "properties": {
+    "contract_version": { "type": "string" },
+    "mutation_id": { "type": "string" },
+    "run_id": { "type": "string" },
+    "session_id": { "type": "string" },
+    "scope": { "type": "string", "enum": ["session", "workspace", "run", "global"] },
+    "kind": {
+      "type": "string",
+      "enum": ["upsert", "delete", "link", "annotate", "prune_recommend", "compact_recommend"]
+    },
+    "branch": {
+      "type": "object",
+      "required": ["branch_id"],
+      "properties": {
+        "branch_id": { "type": "string" },
+        "parent_branch_id": { "type": "string" }
+      }
+    },
+    "key": { "type": "string" },
+    "occurred_at": { "type": "string", "format": "date-time" }
+  },
+  "additionalProperties": true
+}

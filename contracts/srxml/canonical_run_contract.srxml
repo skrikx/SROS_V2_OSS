@@ -1,0 +1,14 @@
+<srxml version="sros.v2">
+  <run_contract contract_version="v2.0">
+    <run_id>run_001</run_id>
+    <trace_id>trace_001</trace_id>
+    <operator_id>op_hassan</operator_id>
+    <tenant_id>local</tenant_id>
+    <workspace_id>default</workspace_id>
+    <intent_summary>Compile and validate scaffold contracts</intent_summary>
+    <normalized_request>go build ./cmd/sros && go test ./...</normalized_request>
+    <risk_class>medium</risk_class>
+    <route_class>local_cli</route_class>
+    <created_at>2026-03-17T09:00:00Z</created_at>
+  </run_contract>
+</srxml>

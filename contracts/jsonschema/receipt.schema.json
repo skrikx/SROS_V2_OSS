@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "sros.v2.receipt",
+  "title": "Receipt",
+  "type": "object",
+  "required": [
+    "contract_version",
+    "receipt_id",
+    "run_id",
+    "kind",
+    "evidence_bundle_id",
+    "summary",
+    "created_at"
+  ],
+  "properties": {
+    "contract_version": { "type": "string" },
+    "receipt_id": { "type": "string" },
+    "run_id": { "type": "string" },
+    "kind": { "type": "string", "enum": ["terminal", "stage", "policy"] },
+    "evidence_bundle_id": { "type": "string" },
+    "summary": { "type": "string" },
+    "closure_proof_ref": { "type": "string" },
+    "created_at": { "type": "string", "format": "date-time" }
+  },
+  "additionalProperties": true
+}
