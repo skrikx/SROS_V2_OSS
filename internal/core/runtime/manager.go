@@ -9,9 +9,13 @@ import (
 	"strings"
 	"time"
 
+	cmemory "srosv2/contracts/memory"
 	"srosv2/contracts/runcontract"
 	"srosv2/internal/core/gov"
+	"srosv2/internal/core/mem"
+	"srosv2/internal/core/mirror"
 	"srosv2/internal/core/orch"
+	"srosv2/internal/shared/ids"
 )
 
 type Options struct {
@@ -21,6 +25,8 @@ type Options struct {
 	Now          func() time.Time
 	Orchestrator *orch.Orchestrator
 	Governor     *gov.Engine
+	Memory       *mem.Store
+	Mirror       *mirror.Engine
 }
 
 type Manager struct {
@@ -30,6 +36,8 @@ type Manager struct {
 	now          func() time.Time
 	orchestrator *orch.Orchestrator
 	governor     *gov.Engine
+	memory       *mem.Store
+	mirror       *mirror.Engine
 }
 
 func NewManager(opts Options) (*Manager, error) {
@@ -55,6 +63,8 @@ func NewManager(opts Options) (*Manager, error) {
 		now:          now,
 		orchestrator: opts.Orchestrator,
 		governor:     opts.Governor,
+		memory:       opts.Memory,
+		mirror:       opts.Mirror,
 	}, nil
 }
 
@@ -80,6 +90,10 @@ func (m *Manager) Run(ctx context.Context, req RunRequest) (RuntimeResponse, err
 	now := m.now().UTC()
 	session := NewSession(contract, contractPath, now)
 	session.TopologyBinding = decision.TopologyBinding
+
+	if err := m.recordMemoryMutation(&session, "runtime.session", "created", "runtime session created"); err != nil {
+		return RuntimeResponse{}, err
+	}
 
 	var plan *orch.Plan
 	if m.orchestrator != nil {
@@ -134,6 +148,9 @@ func (m *Manager) Run(ctx context.Context, req RunRequest) (RuntimeResponse, err
 	}
 
 	if session.State == SessionStateWaitingForInput || session.State == SessionStateFailedSafe {
+		if err := m.observeMirror(&session); err != nil {
+			return RuntimeResponse{}, err
+		}
 		if err := m.store.SaveSession(session); err != nil {
 			return RuntimeResponse{}, err
 		}
@@ -157,13 +174,22 @@ func (m *Manager) Run(ctx context.Context, req RunRequest) (RuntimeResponse, err
 		if err := Transition(&session, SessionStateApproved, decision.Reason, now); err != nil {
 			return RuntimeResponse{}, err
 		}
+		if err := m.recordMemoryMutation(&session, "runtime.state", string(SessionStateApproved), decision.Reason); err != nil {
+			return RuntimeResponse{}, err
+		}
 		if decision.AutoStart {
 			if err := Transition(&session, SessionStateRunning, "runtime session started", now); err != nil {
+				return RuntimeResponse{}, err
+			}
+			if err := m.recordMemoryMutation(&session, "runtime.state", string(SessionStateRunning), "runtime session started"); err != nil {
 				return RuntimeResponse{}, err
 			}
 		}
 	case SessionStateWaitingForInput:
 		if err := Transition(&session, SessionStateWaitingForInput, decision.Reason, now); err != nil {
+			return RuntimeResponse{}, err
+		}
+		if err := m.recordMemoryMutation(&session, "runtime.state", string(SessionStateWaitingForInput), decision.Reason); err != nil {
 			return RuntimeResponse{}, err
 		}
 		approval := ApprovalCheckpoint{
@@ -180,10 +206,16 @@ func (m *Manager) Run(ctx context.Context, req RunRequest) (RuntimeResponse, err
 		if err := Transition(&session, SessionStateFailedSafe, decision.Reason, now); err != nil {
 			return RuntimeResponse{}, err
 		}
+		if err := m.recordMemoryMutation(&session, "runtime.state", string(SessionStateFailedSafe), decision.Reason); err != nil {
+			return RuntimeResponse{}, err
+		}
 	default:
 		return RuntimeResponse{}, fmt.Errorf("unsupported admission initial state %s", decision.InitialState)
 	}
 
+	if err := m.observeMirror(&session); err != nil {
+		return RuntimeResponse{}, err
+	}
 	if err := m.store.SaveSession(session); err != nil {
 		return RuntimeResponse{}, err
 	}
@@ -242,6 +274,12 @@ func (m *Manager) Resume(_ context.Context, req ResumeRequest) (RuntimeResponse,
 		return RuntimeResponse{}, fmt.Errorf("cannot resume session in state %s", session.State)
 	}
 
+	if err := m.recordMemoryMutation(&session, "runtime.state", string(session.State), session.Reason); err != nil {
+		return RuntimeResponse{}, err
+	}
+	if err := m.observeMirror(&session); err != nil {
+		return RuntimeResponse{}, err
+	}
 	if err := m.store.SaveSession(session); err != nil {
 		return RuntimeResponse{}, err
 	}
@@ -261,6 +299,12 @@ func (m *Manager) Pause(_ context.Context, req PauseRequest) (RuntimeResponse, e
 	}
 
 	if err := Transition(&session, SessionStatePaused, reason, now); err != nil {
+		return RuntimeResponse{}, err
+	}
+	if err := m.recordMemoryMutation(&session, "runtime.state", string(SessionStatePaused), reason); err != nil {
+		return RuntimeResponse{}, err
+	}
+	if err := m.observeMirror(&session); err != nil {
 		return RuntimeResponse{}, err
 	}
 	if err := m.store.SaveSession(session); err != nil {
@@ -285,6 +329,12 @@ func (m *Manager) Checkpoint(_ context.Context, req CheckpointRequest) (RuntimeR
 		return RuntimeResponse{}, err
 	}
 	session.LatestCheckpointID = string(cp.Record.CheckpointID)
+	if err := m.recordMemoryMutation(&session, "runtime.checkpoint", session.LatestCheckpointID, "checkpoint created"); err != nil {
+		return RuntimeResponse{}, err
+	}
+	if err := m.observeMirror(&session); err != nil {
+		return RuntimeResponse{}, err
+	}
 
 	if err := m.store.SaveCheckpoint(cp); err != nil {
 		return RuntimeResponse{}, err
@@ -328,6 +378,12 @@ func (m *Manager) Rollback(_ context.Context, req RollbackRequest) (RuntimeRespo
 		return RuntimeResponse{}, err
 	}
 	session.LatestRollbackID = string(rb.Record.RollbackID)
+	if err := m.recordMemoryMutation(&session, "runtime.rollback", session.LatestRollbackID, "rollback applied"); err != nil {
+		return RuntimeResponse{}, err
+	}
+	if err := m.observeMirror(&session); err != nil {
+		return RuntimeResponse{}, err
+	}
 
 	if err := m.store.SaveRollback(rb); err != nil {
 		return RuntimeResponse{}, err
@@ -371,6 +427,8 @@ func snapshotFromSession(mode string, session RuntimeSession) StatusSnapshot {
 		WaitingApproval:    session.ApprovalPath,
 		PlanPath:           session.PlanPath,
 		LastDecision:       session.LastDecision,
+		LatestMutationID:   session.LatestMutationID,
+		LatestWitnessID:    session.LatestWitnessID,
 	}
 }
 
@@ -489,6 +547,101 @@ func (m *Manager) MCPIngest(_ context.Context, path string) (map[string]any, err
 		"summary":        "MCP transport remains deferred to W09; GOV can govern the capability boundary only",
 		"execution_mode": "governed_semantics_only",
 	}, nil
+}
+
+func (m *Manager) Trace(context.Context, string) (map[string]any, error) {
+	return nil, fmt.Errorf("trace boundary remains deferred to W08")
+}
+
+func (m *Manager) Receipts(context.Context, string) (map[string]any, error) {
+	return nil, fmt.Errorf("receipts boundary remains deferred to W08")
+}
+
+func (m *Manager) Memory(_ context.Context, query string) (map[string]any, error) {
+	if m.memory == nil {
+		return nil, fmt.Errorf("memory plane is not wired")
+	}
+	return m.memory.Recall(query)
+}
+
+func (m *Manager) Mirror(_ context.Context, path string) (map[string]any, error) {
+	if m.mirror == nil {
+		return nil, fmt.Errorf("mirror plane is not wired")
+	}
+	return m.mirror.StatusFromFile(path)
+}
+
+func (m *Manager) recordMemoryMutation(session *RuntimeSession, key, value, reason string) error {
+	if m.memory == nil {
+		return nil
+	}
+	entries, err := m.memory.Ledger()
+	if err != nil {
+		return err
+	}
+	var parent ids.MemoryMutationID
+	if len(entries) > 0 {
+		parent = entries[len(entries)-1].MutationID
+	}
+	mutation, err := m.memory.Upsert(mem.MutationInput{
+		Scope: mem.ScopeBinding{
+			Scope:       "session",
+			TenantID:    ids.TenantID(session.Contract.TenantID),
+			WorkspaceID: ids.WorkspaceID(session.Contract.WorkspaceID),
+			RunID:       ids.RunID(session.RunID),
+			SessionID:   ids.SessionID(session.SessionID),
+		},
+		OperatorID:       ids.OperatorID(session.Contract.OperatorID),
+		Kind:             "annotate",
+		Branch:           branchForSession(*session, parent),
+		ParentMutationID: parent,
+		Key:              key,
+		Value:            value,
+		Reason:           reason,
+		OccurredAt:       m.now().UTC(),
+	})
+	if err != nil {
+		return err
+	}
+	session.LatestMutationID = string(mutation.MutationID)
+	return nil
+}
+
+func branchForSession(session RuntimeSession, head ids.MemoryMutationID) cmemory.BranchReference {
+	return cmemory.BranchReference{
+		BranchID:       ids.BranchID("branch_" + session.SessionID),
+		HeadMutationID: head,
+	}
+}
+
+func (m *Manager) observeMirror(session *RuntimeSession) error {
+	if m.mirror == nil || m.memory == nil {
+		return nil
+	}
+	ledger, err := m.memory.Ledger()
+	if err != nil {
+		return err
+	}
+	branches, err := m.memory.Branches()
+	if err != nil {
+		return err
+	}
+	event, _, err := m.mirror.Observe(mirror.RuntimeSnapshot{
+		RunID:           session.RunID,
+		SessionID:       session.SessionID,
+		RuntimeState:    string(session.State),
+		PlanPath:        session.PlanPath,
+		LastDecision:    session.LastDecision,
+		MemoryMutations: len(ledger),
+		BranchCount:     len(branches),
+		PendingApproval: strings.TrimSpace(session.ApprovalPath) != "",
+		Signals:         []string{session.Reason},
+	}, "runtime_manager")
+	if err != nil {
+		return err
+	}
+	session.LatestWitnessID = event.WitnessID
+	return nil
 }
 
 func loadRunContract(path string) (runcontract.RunContract, error) {

@@ -1,0 +1,8 @@
+{
+  "run_id": "run_001",
+  "session_id": "sess_001",
+  "drift_level": "low",
+  "summary": "mirror summary derived from runtime state and local lineage with drift=low",
+  "source_basis": "runtime_state+local_lineage",
+  "witness_count": 1
+}

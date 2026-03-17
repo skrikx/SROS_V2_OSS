@@ -16,5 +16,6 @@ type TraceEvent struct {
 	EventType       EventType      `json:"event_type"`
 	OccurredAt      time.Time      `json:"occurred_at"`
 	Payload         map[string]any `json:"payload,omitempty"`
+	ArtifactRefs    []ids.ArtifactID `json:"artifact_refs,omitempty"`
 	ReceiptRef      ids.ReceiptID  `json:"receipt_ref,omitempty"`
 }

@@ -31,6 +31,8 @@ type RuntimeSession struct {
 	PlanPath           string                  `json:"plan_path,omitempty"`
 	LastDecision       string                  `json:"last_decision,omitempty"`
 	TopologyBinding    string                  `json:"topology_binding,omitempty"`
+	LatestMutationID   string                  `json:"latest_mutation_id,omitempty"`
+	LatestWitnessID    string                  `json:"latest_witness_id,omitempty"`
 }
 
 func NewSession(contract runcontract.RunContract, contractPath string, now time.Time) RuntimeSession {

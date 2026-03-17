@@ -13,8 +13,9 @@ func ValidateReceipt(receipt Receipt) []error {
 	appendErr(validation.RequiredString("contract_version", receipt.ContractVersion))
 	appendErr(validation.RequiredString("receipt_id", string(receipt.ReceiptID)))
 	appendErr(validation.RequiredString("run_id", string(receipt.RunID)))
-	appendErr(validation.Enum("kind", string(receipt.Kind), []string{"terminal", "stage", "policy"}))
+	appendErr(validation.Enum("kind", string(receipt.Kind), []string{"terminal", "stage", "policy", "closure"}))
 	appendErr(validation.RequiredString("evidence_bundle_id", string(receipt.EvidenceBundleID)))
+	appendErr(validation.RequiredString("status", receipt.Status))
 	appendErr(validation.RequiredString("summary", receipt.Summary))
 	appendErr(validation.RequiredTime("created_at", receipt.CreatedAt))
 	return errs

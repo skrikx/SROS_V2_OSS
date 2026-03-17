@@ -3,11 +3,15 @@
   "mutation_id": "mm_001",
   "run_id": "run_001",
   "session_id": "session_001",
+  "tenant_id": "local",
+  "workspace_id": "default",
+  "operator_id": "op_local",
   "scope": "session",
   "kind": "upsert",
   "branch": {
     "branch_id": "branch_main"
   },
+  "lineage_ref": "lineage:mm_001",
   "key": "intent.summary",
   "value": "Compile and validate scaffold contracts",
   "occurred_at": "2026-03-17T09:00:00Z"

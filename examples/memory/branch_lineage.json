@@ -1,0 +1,17 @@
+{
+  "operator_id": "op_local",
+  "tenant_id": "local",
+  "workspace_id": "default",
+  "run_id": "run_mem_001",
+  "session_id": "sess_mem_001",
+  "branch_id": "branch_feature",
+  "parent_branch_id": "branch_main",
+  "reason": "feature branch",
+  "entries": [
+    {
+      "scope": "workspace",
+      "key": "workspace.intent",
+      "value": "branch feature refinement"
+    }
+  ]
+}

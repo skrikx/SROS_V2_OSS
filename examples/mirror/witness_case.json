@@ -1,0 +1,13 @@
+{
+  "run_id": "run_governed_ask_001",
+  "session_id": "sess_governed_ask_001",
+  "runtime_state": "waiting_for_input",
+  "plan_path": "artifacts/runtime/orch/sess_governed_ask_001_plan.json",
+  "last_decision": "ask",
+  "memory_mutations": 1,
+  "branch_count": 2,
+  "pending_approval": true,
+  "signals": [
+    "operator checkpoint required"
+  ]
+}

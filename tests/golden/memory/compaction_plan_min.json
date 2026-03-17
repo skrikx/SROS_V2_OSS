@@ -1,0 +1,7 @@
+{
+  "keys": [
+    "workspace.intent"
+  ],
+  "mutation_count": 1,
+  "summary": "compaction preserves lineage while reducing recall surface"
+}

@@ -2,6 +2,8 @@ package boot
 
 import (
 	"srosv2/internal/core/gov"
+	"srosv2/internal/core/mem"
+	"srosv2/internal/core/mirror"
 	"srosv2/internal/core/orch"
 	"srosv2/internal/core/runtime"
 )
@@ -14,6 +16,8 @@ type Bundle struct {
 	Fabric       runtime.Fabric     `json:"-"`
 	Orchestrator *orch.Orchestrator `json:"-"`
 	Governor     *gov.Engine        `json:"-"`
+	Memory       *mem.Store         `json:"-"`
+	Mirror       *mirror.Engine     `json:"-"`
 	Boundaries   []ServiceBoundary  `json:"boundaries"`
 }
 

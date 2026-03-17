@@ -1,0 +1,9 @@
+{
+  "witness_id": "wit_fixture",
+  "run_id": "run_001",
+  "session_id": "sess_001",
+  "basis": "runtime_manager",
+  "severity": "low",
+  "message": "mirror witness derived from runtime state and local lineage",
+  "occurred_at": "2026-03-17T12:00:00Z"
+}

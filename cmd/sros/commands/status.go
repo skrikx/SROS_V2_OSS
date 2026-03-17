@@ -47,9 +47,11 @@ func newStatusCommand() *Command {
 				"workspace":     ctx.Config.WorkspaceRoot,
 				"boundaries":    ctx.Bundle.Boundaries,
 				"runtime":       snapshot,
+				"memory_wired":  ctx.Bundle.Memory != nil,
+				"mirror_wired":  ctx.Bundle.Mirror != nil,
 			}
 			text := fmt.Sprintf(
-				"mode: %s\nconfig_source: %s\nworkspace: %s\nruntime_summary: %s\nruntime_session: %s\nruntime_state: %s\nlatest_checkpoint: %s\nlatest_rollback: %s\nwaiting_approval: %s\n%s",
+				"mode: %s\nconfig_source: %s\nworkspace: %s\nruntime_summary: %s\nruntime_session: %s\nruntime_state: %s\nlatest_checkpoint: %s\nlatest_rollback: %s\nwaiting_approval: %s\nlatest_mutation: %s\nlatest_witness: %s\nmemory_wired: %t\nmirror_wired: %t\n%s",
 				ctx.Bundle.Mode,
 				ctx.ConfigSource,
 				ctx.Config.WorkspaceRoot,
@@ -59,6 +61,10 @@ func newStatusCommand() *Command {
 				emptyFallback(snapshot.LatestCheckpointID, "(none)"),
 				emptyFallback(snapshot.LatestRollbackID, "(none)"),
 				emptyFallback(snapshot.WaitingApproval, "(none)"),
+				emptyFallback(snapshot.LatestMutationID, "(none)"),
+				emptyFallback(snapshot.LatestWitnessID, "(none)"),
+				ctx.Bundle.Memory != nil,
+				ctx.Bundle.Mirror != nil,
 				formatBoundaries(ctx.Bundle.Boundaries),
 			)
 			return writeOutput(ctx, text, payload)

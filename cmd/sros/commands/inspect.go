@@ -30,13 +30,19 @@ func newInspectCommand() *Command {
 				return writeOutput(ctx, fmt.Sprintf("inspect: %s", target), payload)
 			}
 
-			required := []string{"cmd/sros", "internal/core/boot", "internal/core/runtime", "contracts", "docs", "tests"}
+			required := []string{"cmd/sros", "internal/core/boot", "internal/core/runtime", "internal/core/mem", "internal/core/mirror", "contracts", "docs", "tests"}
 			report := map[string]bool{}
 			for _, rel := range required {
 				_, err := os.Stat(filepath.Join(ctx.Config.WorkspaceRoot, rel))
 				report[rel] = err == nil
 			}
-			payload := map[string]any{"workspace_root": ctx.Config.WorkspaceRoot, "required_paths": report, "mode": ctx.Bundle.Mode}
+			payload := map[string]any{
+				"workspace_root": ctx.Config.WorkspaceRoot,
+				"required_paths": report,
+				"mode":           ctx.Bundle.Mode,
+				"memory_wired":   ctx.Bundle.Memory != nil,
+				"mirror_wired":   ctx.Bundle.Mirror != nil,
+			}
 			return writeOutput(ctx, "inspect: repository wiring snapshot captured", payload)
 		},
 	}

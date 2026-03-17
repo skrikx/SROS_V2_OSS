@@ -15,11 +15,15 @@ func TestMemoryMutationValidateValid(t *testing.T) {
 		MutationID:      ids.MemoryMutationID("mm_001"),
 		RunID:           ids.RunID("run_001"),
 		SessionID:       ids.SessionID("session_001"),
+		TenantID:        ids.TenantID("local"),
+		WorkspaceID:     ids.WorkspaceID("default"),
+		OperatorID:      ids.OperatorID("op_local"),
 		Scope:           memory.ScopeSession,
 		Kind:            memory.MutationKindUpsert,
 		Branch: memory.BranchReference{
 			BranchID: ids.BranchID("branch_main"),
 		},
+		LineageRef: "lineage:mm_001",
 		Key:        "intent.summary",
 		OccurredAt: time.Date(2026, 3, 17, 9, 0, 0, 0, time.UTC),
 	}

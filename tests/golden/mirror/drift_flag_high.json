@@ -1,0 +1,6 @@
+{
+  "level": "high",
+  "reasons": [
+    "runtime entered failed_safe"
+  ]
+}

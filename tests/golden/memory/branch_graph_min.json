@@ -1,0 +1,9 @@
+{
+  "branch_id": "branch_feature",
+  "parent_branch_id": "branch_main",
+  "created_by": "op_local",
+  "tenant_id": "local",
+  "workspace_id": "default",
+  "created_at": "2026-03-17T12:00:00Z",
+  "reason": "feature branch"
+}

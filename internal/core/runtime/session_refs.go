@@ -33,4 +33,6 @@ type StatusSnapshot struct {
 	WaitingApproval    string      `json:"waiting_approval,omitempty"`
 	PlanPath           string      `json:"plan_path,omitempty"`
 	LastDecision       string      `json:"last_decision,omitempty"`
+	LatestMutationID   string      `json:"latest_mutation_id,omitempty"`
+	LatestWitnessID    string      `json:"latest_witness_id,omitempty"`
 }

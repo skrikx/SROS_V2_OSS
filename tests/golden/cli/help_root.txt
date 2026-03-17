@@ -18,8 +18,8 @@ Commands:
   rollback     Rollback a runtime session to a checkpoint
   trace        Inspect trace boundary (trace plane deferred)
   receipts     Inspect receipt boundary (evidence plane deferred)
-  memory       Inspect memory boundary (memory plane deferred)
-  mirror       Inspect mirror boundary (mirror plane deferred)
+  memory       Memory continuity surfaces
+  mirror       Mirror witness and drift surfaces
   inspect      Inspect local wiring and repository surfaces
   status       Show runtime status and boundary wiring
   tools        Tool capability surfaces (fabric deferred)

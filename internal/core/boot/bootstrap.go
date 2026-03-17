@@ -5,6 +5,8 @@ import (
 	"path/filepath"
 
 	"srosv2/internal/core/gov"
+	"srosv2/internal/core/mem"
+	"srosv2/internal/core/mirror"
 	"srosv2/internal/core/orch"
 	"srosv2/internal/core/runtime"
 	"srosv2/internal/core/sr8"
@@ -22,7 +24,9 @@ func Bootstrap(cfg config.Config) (Bundle, error) {
 		{Name: "runtime", Wired: true, Summary: "sr9 runtime gate and state machine active"},
 		{Name: "orch", Wired: true, Summary: "orchestration sequencing and checkpoint routing active"},
 		{Name: "gov", Wired: true, Summary: "allow ask deny, sandbox, and permission gating active"},
-		{Name: "inspector", Wired: false, DeferredTo: "W07/W08", Summary: "inspect routing boundary only"},
+		{Name: "mem", Wired: true, Summary: "workspace memory, lineage, and branch surfaces active"},
+		{Name: "mirror", Wired: true, Summary: "semantic drift and witness surfaces active"},
+		{Name: "inspector", Wired: true, Summary: "inspect routing boundary active for memory and mirror"},
 		{Name: "fabric", Wired: true, DeferredTo: "W09", Summary: "governed fabric semantics only; execution deferred"},
 	}
 
@@ -43,6 +47,14 @@ func Bootstrap(cfg config.Config) (Bundle, error) {
 	if err != nil {
 		return Bundle{}, err
 	}
+	memoryStore, err := mem.NewStore(filepath.Join(cfg.ArtifactRoot, "memory"), nil)
+	if err != nil {
+		return Bundle{}, err
+	}
+	mirrorEngine, err := mirror.New(filepath.Join(cfg.ArtifactRoot, "mirror"), nil)
+	if err != nil {
+		return Bundle{}, err
+	}
 
 	runtimeManager, err := runtime.NewManager(runtime.Options{
 		StoreDir:     filepath.Join(cfg.ArtifactRoot, "runtime"),
@@ -50,6 +62,8 @@ func Bootstrap(cfg config.Config) (Bundle, error) {
 		Gate:         sr9.NewGate(sr9.Options{}),
 		Orchestrator: orchestrator,
 		Governor:     governor,
+		Memory:       memoryStore,
+		Mirror:       mirrorEngine,
 	})
 	if err != nil {
 		return Bundle{}, err
@@ -59,9 +73,12 @@ func Bootstrap(cfg config.Config) (Bundle, error) {
 		Mode:         ModeLocalCLI,
 		Compiler:     sr8.NewCompiler(sr8.Options{}),
 		Runtime:      runtimeManager,
+		Inspector:    runtimeManager,
 		Fabric:       runtimeManager,
 		Orchestrator: orchestrator,
 		Governor:     governor,
+		Memory:       memoryStore,
+		Mirror:       mirrorEngine,
 		Boundaries:   boundaries,
 	}, nil
 }

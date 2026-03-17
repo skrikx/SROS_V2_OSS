@@ -1,0 +1,20 @@
+{
+  "operator_id": "op_local",
+  "tenant_id": "local",
+  "workspace_id": "default",
+  "run_id": "run_mem_001",
+  "session_id": "sess_mem_001",
+  "branch_id": "branch_main",
+  "entries": [
+    {
+      "scope": "workspace",
+      "key": "workspace.intent",
+      "value": "remember workspace compile and governance context"
+    },
+    {
+      "scope": "session",
+      "key": "session.note",
+      "value": "local recall seed"
+    }
+  ]
+}

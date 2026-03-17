@@ -1,0 +1,18 @@
+{
+  "contract_version": "v2.0",
+  "mutation_id": "mm_fixture",
+  "run_id": "run_001",
+  "session_id": "sess_001",
+  "tenant_id": "local",
+  "workspace_id": "default",
+  "operator_id": "op_local",
+  "scope": "workspace",
+  "kind": "annotate",
+  "branch": {
+    "branch_id": "branch_main"
+  },
+  "lineage_ref": "lineage:mm_fixture",
+  "key": "runtime.state",
+  "value": "running",
+  "occurred_at": "2026-03-17T12:00:00Z"
+}
