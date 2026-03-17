@@ -1,0 +1,47 @@
+{
+  "session_id": "sess_example001",
+  "run_id": "run_example001",
+  "contract_path": "examples/runs/minimal_run_contract.json",
+  "contract": {
+    "contract_version": "v2.0",
+    "run_id": "run_example001",
+    "trace_id": "trace_example001",
+    "operator_id": "op_local",
+    "tenant_id": "local",
+    "workspace_id": "default",
+    "intent_summary": "minimal runtime session",
+    "normalized_request": "minimal runtime session",
+    "risk_class": "low",
+    "route_class": "local_cli",
+    "requested_receipts": [
+      {
+        "mode": "summary",
+        "kind": "compile"
+      }
+    ],
+    "metadata": {
+      "compile_request_id": "cmp_example001",
+      "domain_class": "general_ops",
+      "topology_class": "local_single"
+    },
+    "created_at": "2026-03-17T12:00:00Z"
+  },
+  "state": "running",
+  "reason": "runtime session started",
+  "created_at": "2026-03-17T12:01:00Z",
+  "updated_at": "2026-03-17T12:01:00Z",
+  "history": [
+    {
+      "from": "planned",
+      "to": "approved",
+      "reason": "runtime admission allow",
+      "at": "2026-03-17T12:01:00Z"
+    },
+    {
+      "from": "approved",
+      "to": "running",
+      "reason": "runtime session started",
+      "at": "2026-03-17T12:01:00Z"
+    }
+  ]
+}

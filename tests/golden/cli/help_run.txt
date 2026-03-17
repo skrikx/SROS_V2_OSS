@@ -1,8 +1,6 @@
-sros run - Dispatch run boundary (SR9 deferred)
+sros run - Admit a canonical run contract into SR9 runtime
 
 Usage:
-  sros run [--run-id <id>] [--plan <path>]
+  sros run --contract <run-contract.json>
 
 Run 'sros help <command>' for more details.
-
-

@@ -3,6 +3,7 @@ package commands
 import (
 	"context"
 	"flag"
+	"strings"
 
 	"srosv2/internal/core/runtime"
 )
@@ -10,24 +11,29 @@ import (
 func newPlanCommand() *Command {
 	return &Command{
 		Name:    "plan",
-		Summary: "Dispatch plan boundary (runtime planner deferred)",
-		Usage:   "sros plan [--run-id <id>] [--plan <path>]",
+		Summary: "Run runtime preflight planning on a canonical run contract",
+		Usage:   "sros plan --contract <run-contract.json>",
 		Run: func(ctx *Context, args []string) error {
 			fs := flag.NewFlagSet("plan", flag.ContinueOnError)
 			fs.SetOutput(ioDiscard{})
-			runID := fs.String("run-id", "", "run identifier")
-			plan := fs.String("plan", "", "plan path")
+			contractPath := fs.String("contract", "", "path to canonical run contract json")
 			if err := fs.Parse(args); err != nil {
 				return OperatorError(err.Error())
 			}
-			if ctx.Bundle.Runtime == nil {
-				return DeferredError("plan boundary is not wired yet (deferred to W05)")
+			if fs.NArg() != 0 {
+				return OperatorError("plan does not accept positional arguments")
 			}
-			resp, err := ctx.Bundle.Runtime.Plan(context.Background(), runtime.RunRequest{RunID: *runID, Plan: *plan})
+			if strings.TrimSpace(*contractPath) == "" {
+				return OperatorError("plan requires --contract")
+			}
+			if ctx.Bundle.Runtime == nil {
+				return DeferredError("plan boundary is not wired")
+			}
+			resp, err := ctx.Bundle.Runtime.Plan(context.Background(), runtime.RunRequest{ContractPath: strings.TrimSpace(*contractPath)})
 			if err != nil {
 				return EnvironmentError(err.Error())
 			}
-			return writeOutput(ctx, "plan dispatched", resp)
+			return writeOutput(ctx, "runtime preflight planned", resp)
 		},
 	}
 }

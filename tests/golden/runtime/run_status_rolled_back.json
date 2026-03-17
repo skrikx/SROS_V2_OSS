@@ -1,0 +1,12 @@
+{
+  "mode": "local_cli",
+  "session": {
+    "run_id": "run_example001",
+    "session_id": "sess_example001",
+    "state": "rolled_back",
+    "updated_at": "2026-03-17T12:07:00Z"
+  },
+  "summary": "rollback to checkpoint cp_example001",
+  "latest_checkpoint_id": "cp_example001",
+  "latest_rollback_id": "rb_example001"
+}

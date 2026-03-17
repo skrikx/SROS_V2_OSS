@@ -1,0 +1,25 @@
+{
+  "contract_version": "v2.0",
+  "run_id": "run_ask_001",
+  "trace_id": "trace_ask_001",
+  "operator_id": "op_local",
+  "tenant_id": "local",
+  "workspace_id": "default",
+  "intent_summary": "ask-mode runtime admission example",
+  "normalized_request": "ask-mode runtime admission example",
+  "risk_class": "high",
+  "route_class": "local_cli",
+  "requested_receipts": [
+    {
+      "mode": "summary",
+      "kind": "compile"
+    }
+  ],
+  "metadata": {
+    "compile_request_id": "cmp_ask_001",
+    "domain_class": "general_ops",
+    "topology_class": "local_single",
+    "approval_mode": "ask"
+  },
+  "created_at": "2026-03-17T12:05:00Z"
+}

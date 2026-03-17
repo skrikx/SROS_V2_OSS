@@ -1,0 +1,40 @@
+{
+  "planned": [
+    "approved",
+    "waiting_for_input",
+    "failed_safe"
+  ],
+  "approved": [
+    "running",
+    "waiting_for_input",
+    "failed_safe"
+  ],
+  "running": [
+    "waiting_for_input",
+    "paused",
+    "checkpointed",
+    "completed",
+    "failed_safe"
+  ],
+  "waiting_for_input": [
+    "approved",
+    "running",
+    "paused",
+    "failed_safe"
+  ],
+  "paused": [
+    "running",
+    "checkpointed",
+    "rolled_back",
+    "failed_safe"
+  ],
+  "checkpointed": [
+    "running",
+    "paused",
+    "rolled_back",
+    "failed_safe"
+  ],
+  "failed_safe": [],
+  "rolled_back": [],
+  "completed": []
+}

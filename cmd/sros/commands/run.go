@@ -3,6 +3,7 @@ package commands
 import (
 	"context"
 	"flag"
+	"strings"
 
 	"srosv2/internal/core/runtime"
 )
@@ -10,24 +11,29 @@ import (
 func newRunCommand() *Command {
 	return &Command{
 		Name:    "run",
-		Summary: "Dispatch run boundary (SR9 deferred)",
-		Usage:   "sros run [--run-id <id>] [--plan <path>]",
+		Summary: "Admit a canonical run contract into SR9 runtime",
+		Usage:   "sros run --contract <run-contract.json>",
 		Run: func(ctx *Context, args []string) error {
 			fs := flag.NewFlagSet("run", flag.ContinueOnError)
 			fs.SetOutput(ioDiscard{})
-			runID := fs.String("run-id", "", "run identifier")
-			plan := fs.String("plan", "", "plan path")
+			contractPath := fs.String("contract", "", "path to canonical run contract json")
 			if err := fs.Parse(args); err != nil {
 				return OperatorError(err.Error())
 			}
-			if ctx.Bundle.Runtime == nil {
-				return DeferredError("run boundary is not wired yet (deferred to W05)")
+			if fs.NArg() != 0 {
+				return OperatorError("run does not accept positional arguments")
 			}
-			resp, err := ctx.Bundle.Runtime.Run(context.Background(), runtime.RunRequest{RunID: *runID, Plan: *plan})
+			if strings.TrimSpace(*contractPath) == "" {
+				return OperatorError("run requires --contract")
+			}
+			if ctx.Bundle.Runtime == nil {
+				return DeferredError("run boundary is not wired")
+			}
+			resp, err := ctx.Bundle.Runtime.Run(context.Background(), runtime.RunRequest{ContractPath: strings.TrimSpace(*contractPath)})
 			if err != nil {
 				return EnvironmentError(err.Error())
 			}
-			return writeOutput(ctx, "run dispatched", resp)
+			return writeOutput(ctx, "runtime session admitted", resp)
 		},
 	}
 }

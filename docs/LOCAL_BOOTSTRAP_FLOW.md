@@ -9,4 +9,5 @@ W03 bootstrap is in-process and local-only.
 5. Build a local bootstrap bundle with service boundaries.
 6. Dispatch command handler.
 
-The bundle exposes compile/runtime/inspection/fabric boundaries without implementing W04-W10 behavior.
+The bundle exposes compile/runtime/inspection/fabric boundaries.
+By W05, compile (SR8) and runtime (SR9 + runtime manager) are wired in local mode, while inspection/fabric planes remain deferred.

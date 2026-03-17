@@ -29,7 +29,7 @@ func TestHelpSmoke(t *testing.T) {
 	if err := cmd.Run(); err != nil {
 		t.Fatalf("run help failed: %v stderr=%s", err, errOut.String())
 	}
-	if !strings.Contains(out.String(), "Dispatch run boundary") {
+	if !strings.Contains(out.String(), "Admit a canonical run contract into SR9 runtime") {
 		t.Fatalf("unexpected run help output: %s", out.String())
 	}
 }

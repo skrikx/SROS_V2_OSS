@@ -6,53 +6,62 @@ import (
 	"srosv2/contracts/runcontract"
 )
 
-type CompileRequest struct {
-	Intent    string `json:"intent"`
-	InputPath string `json:"input_path,omitempty"`
-}
-
-type CompileResponse struct {
-	Accepted    bool                     `json:"accepted"`
-	Summary     string                   `json:"summary"`
-	RunContract *runcontract.RunContract `json:"run_contract,omitempty"`
-}
-
 type RunRequest struct {
-	RunID string `json:"run_id,omitempty"`
-	Plan  string `json:"plan,omitempty"`
+	ContractPath string `json:"contract_path"`
 }
 
 type ResumeRequest struct {
-	SessionID string `json:"session_id"`
+	SessionID    string `json:"session_id,omitempty"`
+	ApprovalFile string `json:"approval_file,omitempty"`
 }
 
 type PauseRequest struct {
-	SessionID string `json:"session_id"`
+	SessionID string `json:"session_id,omitempty"`
 	Reason    string `json:"reason,omitempty"`
 }
 
 type CheckpointRequest struct {
-	SessionID string `json:"session_id"`
-	Stage     string `json:"stage"`
+	SessionID string `json:"session_id,omitempty"`
+	Stage     string `json:"stage,omitempty"`
 }
 
 type RollbackRequest struct {
-	SessionID    string `json:"session_id"`
-	CheckpointID string `json:"checkpoint_id"`
+	SessionID    string `json:"session_id,omitempty"`
+	CheckpointID string `json:"checkpoint_id,omitempty"`
+	Reason       string `json:"reason,omitempty"`
 }
 
 type RuntimeResponse struct {
-	Accepted bool       `json:"accepted"`
-	Summary  string     `json:"summary"`
-	Session  SessionRef `json:"session,omitempty"`
+	Accepted      bool       `json:"accepted"`
+	Summary       string     `json:"summary"`
+	Session       SessionRef `json:"session,omitempty"`
+	CheckpointID  string     `json:"checkpoint_id,omitempty"`
+	RollbackID    string     `json:"rollback_id,omitempty"`
+	ApprovalPath  string     `json:"approval_path,omitempty"`
+	RuntimeRecord string     `json:"runtime_record,omitempty"`
 }
 
 type StatusRequest struct {
 	SessionID string `json:"session_id,omitempty"`
+	Latest    bool   `json:"latest,omitempty"`
 }
 
-type Compiler interface {
-	Compile(context.Context, CompileRequest) (CompileResponse, error)
+type AdmissionRequest struct {
+	Contract     runcontract.RunContract `json:"contract"`
+	ContractPath string                  `json:"contract_path"`
+}
+
+type AdmissionDecision struct {
+	InitialState        SessionState `json:"initial_state"`
+	Reason              string       `json:"reason"`
+	AutoStart           bool         `json:"auto_start"`
+	RequireOperatorAck  bool         `json:"require_operator_ack"`
+	WaitingApprovalHint string       `json:"waiting_approval_hint,omitempty"`
+	TopologyBinding     string       `json:"topology_binding,omitempty"`
+}
+
+type AdmissionGate interface {
+	Admit(context.Context, AdmissionRequest) (AdmissionDecision, error)
 }
 
 type Runtime interface {

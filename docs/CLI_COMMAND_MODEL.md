@@ -16,5 +16,6 @@ SROS V2 uses `cmd/sros` as the canonical local-only operator ingress.
 
 ## Deferred Semantics
 
-Commands whose backing planes are not wired in W03 fail intentionally with explicit deferred messages and non-zero exit codes.
+Runtime control commands (`run`, `resume`, `pause`, `checkpoint`, `rollback`, `status`) are wired in W05 through SR9 and the runtime manager.
+Other planes that are still pending (trace, memory, mirror, fabric capabilities) fail intentionally with explicit deferred messages and non-zero exit codes.
 No command silently embeds later-plane behavior.

@@ -3,6 +3,7 @@ package commands
 import (
 	"context"
 	"flag"
+	"strings"
 
 	"srosv2/internal/core/runtime"
 )
@@ -10,27 +11,30 @@ import (
 func newCheckpointCommand() *Command {
 	return &Command{
 		Name:    "checkpoint",
-		Summary: "Dispatch checkpoint boundary (runtime deferred)",
-		Usage:   "sros checkpoint --session <id> --stage <stage>",
+		Summary: "Create a runtime checkpoint record",
+		Usage:   "sros checkpoint [--session <id>] [--stage <stage>]",
 		Run: func(ctx *Context, args []string) error {
 			fs := flag.NewFlagSet("checkpoint", flag.ContinueOnError)
 			fs.SetOutput(ioDiscard{})
 			sessionID := fs.String("session", "", "session identifier")
-			stage := fs.String("stage", "", "checkpoint stage")
+			stage := fs.String("stage", "validated", "checkpoint stage")
 			if err := fs.Parse(args); err != nil {
 				return OperatorError(err.Error())
 			}
-			if *sessionID == "" || *stage == "" {
-				return OperatorError("checkpoint requires --session and --stage")
+			if fs.NArg() != 0 {
+				return OperatorError("checkpoint does not accept positional arguments")
 			}
 			if ctx.Bundle.Runtime == nil {
-				return DeferredError("checkpoint boundary is not wired yet (deferred to W05)")
+				return DeferredError("checkpoint boundary is not wired")
 			}
-			resp, err := ctx.Bundle.Runtime.Checkpoint(context.Background(), runtime.CheckpointRequest{SessionID: *sessionID, Stage: *stage})
+			resp, err := ctx.Bundle.Runtime.Checkpoint(context.Background(), runtime.CheckpointRequest{
+				SessionID: strings.TrimSpace(*sessionID),
+				Stage:     strings.TrimSpace(*stage),
+			})
 			if err != nil {
 				return EnvironmentError(err.Error())
 			}
-			return writeOutput(ctx, "checkpoint dispatched", resp)
+			return writeOutput(ctx, "checkpoint created", resp)
 		},
 	}
 }

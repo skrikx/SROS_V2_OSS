@@ -10,18 +10,18 @@ Commands:
   seed         Create a local seed artifact for smoke workflows
   config       Show resolved config and source
   compile      Compile intent through SR8 into canonical run contract
-  run          Dispatch run boundary (SR9 deferred)
-  plan         Dispatch plan boundary (runtime planner deferred)
-  resume       Dispatch resume boundary (runtime deferred)
-  pause        Dispatch pause boundary (runtime deferred)
-  checkpoint   Dispatch checkpoint boundary (runtime deferred)
-  rollback     Dispatch rollback boundary (runtime deferred)
+  run          Admit a canonical run contract into SR9 runtime
+  plan         Run runtime preflight planning on a canonical run contract
+  resume       Resume a runtime session
+  pause        Pause a runtime session
+  checkpoint   Create a runtime checkpoint record
+  rollback     Rollback a runtime session to a checkpoint
   trace        Inspect trace boundary (trace plane deferred)
   receipts     Inspect receipt boundary (evidence plane deferred)
   memory       Inspect memory boundary (memory plane deferred)
   mirror       Inspect mirror boundary (mirror plane deferred)
   inspect      Inspect local wiring and repository surfaces
-  status       Show CLI mode, config source, and boundary wiring
+  status       Show runtime status and boundary wiring
   tools        Tool capability surfaces (fabric deferred)
   connectors   Connector capability surfaces (fabric deferred)
   mcp          MCP ingress capability surface (fabric deferred)
@@ -33,5 +33,3 @@ Global Flags:
   -h, --help           Show help
 
 Run 'sros help <command>' for more details.
-
-
