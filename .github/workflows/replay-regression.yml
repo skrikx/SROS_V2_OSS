@@ -1,0 +1,38 @@
+name: replay-regression
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: replay-regression-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  replay-and-regression:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - name: Run replay smoke script
+        run: bash ./scripts/test_replay.sh
+
+      - name: Run regression and rollback suites
+        run: go test ./tests/regression/... ./tests/rollback/... -count=1
+
+      - name: Run replay-focused e2e test
+        run: go test ./tests/integration/e2e -run TestReplaySmoke -count=1

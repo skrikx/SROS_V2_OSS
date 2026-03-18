@@ -1,0 +1,68 @@
+name: integration-postgres
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: integration-postgres-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  postgres-validation:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: sros_v2
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d sros_v2"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      CI: "true"
+      SROS_STRICT: "1"
+      SROS_DATABASE_ENABLED: "true"
+      SROS_DATABASE_DRIVER: "postgres"
+      SROS_DATABASE_URL: "postgres://postgres:postgres@localhost:5432/sros_v2?sslmode=disable"
+      DATABASE_URL: "postgres://postgres:postgres@localhost:5432/sros_v2?sslmode=disable"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - name: Install psql client
+        run: sudo apt-get update && sudo apt-get install -y postgresql-client
+
+      - name: Apply migrations in strict mode
+        run: bash ./scripts/migrate_local.sh
+
+      - name: Seed runtime paths in strict mode
+        run: bash ./scripts/seed_local.sh
+
+      - name: Run DB-backed runtime command
+        run: go run ./cmd/sros run --contract examples/runs/minimal_run_contract.json
+
+      - name: Verify DB state and reachability
+        run: |
+          table_count="$(psql "$SROS_DATABASE_URL" -Atc "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema='public' AND table_name='runs';")"
+          test "$table_count" = "1"
+          psql "$SROS_DATABASE_URL" -Atc "SELECT COUNT(*) FROM runs;"

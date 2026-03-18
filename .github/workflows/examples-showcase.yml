@@ -1,0 +1,44 @@
+name: examples-showcase
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: examples-showcase-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  examples-and-showcase:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - name: Run examples script
+        run: bash ./scripts/examples_run.sh
+
+      - name: Build showcase pack
+        run: bash ./scripts/build_showcase_pack.sh
+
+      - name: Validate showcase artifacts
+        run: |
+          test -f artifacts/showcase/example_catalog.json
+          test -f artifacts/showcase/first_run_snapshot.json
+          test -f artifacts/showcase/share_pack_manifest.json
+
+      - name: Run example-focused e2e tests
+        run: go test ./tests/integration/e2e -run "TestFirstRunTimeToValue|TestShowcaseExamplesPack" -count=1

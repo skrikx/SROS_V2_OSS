@@ -1,9 +1,12 @@
 # SROS V2
 
 [![CI](https://github.com/skrikx/SROS_V2_OSS/actions/workflows/ci.yml/badge.svg)](https://github.com/skrikx/SROS_V2_OSS/actions/workflows/ci.yml)
+[![Integration Postgres](https://github.com/skrikx/SROS_V2_OSS/actions/workflows/integration-postgres.yml/badge.svg)](https://github.com/skrikx/SROS_V2_OSS/actions/workflows/integration-postgres.yml)
+[![Release Verify](https://github.com/skrikx/SROS_V2_OSS/actions/workflows/release-verify.yml/badge.svg)](https://github.com/skrikx/SROS_V2_OSS/actions/workflows/release-verify.yml)
+[![Docs Links](https://github.com/skrikx/SROS_V2_OSS/actions/workflows/docs-links.yml/badge.svg)](https://github.com/skrikx/SROS_V2_OSS/actions/workflows/docs-links.yml)
 
 SROS V2 is a local-only, CLI-first sovereign kernel for governed runs, traces, receipts, memory, replay, and tool-fabric workflows.
-CI validates `go build ./cmd/sros` and `go test ./...` on pushes and pull requests.
+Public automation validates build and tests, Postgres integration paths, replay and regression coverage, release-pack verification, and docs link integrity.
 
 It is not a toy shell.
 It is the narrowed local profile of SROS V3, with the real chain intact:
