@@ -3,7 +3,6 @@ package e2e_test
 import (
 	"bytes"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"testing"
 )
@@ -12,7 +11,7 @@ func TestShowcaseExamplesPack(t *testing.T) {
 	root := repoRoot(t)
 	var out bytes.Buffer
 	var errOut bytes.Buffer
-	cmd := exec.Command("C:\\Program Files\\Git\\bin\\bash.exe", "./scripts/build_showcase_pack.sh")
+	cmd := bashScriptCommand(t, "./scripts/build_showcase_pack.sh")
 	cmd.Dir = root
 	cmd.Stdout = &out
 	cmd.Stderr = &errOut
