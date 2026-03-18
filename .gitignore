@@ -1,5 +1,7 @@
 # Build outputs
 bin/
+sros
+sros.exe
 *.exe
 *.exe~
 *.dll

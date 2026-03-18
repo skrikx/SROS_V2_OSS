@@ -1,6 +1,9 @@
 # SROS V2
 
+[![CI](https://github.com/skrikx/SROS_V2_OSS/actions/workflows/ci.yml/badge.svg)](https://github.com/skrikx/SROS_V2_OSS/actions/workflows/ci.yml)
+
 SROS V2 is a local-only, CLI-first sovereign kernel for governed runs, traces, receipts, memory, replay, and tool-fabric workflows.
+CI validates `go build ./cmd/sros` and `go test ./...` on pushes and pull requests.
 
 It is not a toy shell.
 It is the narrowed local profile of SROS V3, with the real chain intact:
